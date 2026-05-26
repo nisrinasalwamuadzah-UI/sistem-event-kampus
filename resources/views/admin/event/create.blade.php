@@ -1,0 +1,50 @@
+@extends('layouts.admin')
+
+@section('title', 'Tambah Event')
+
+@section('content')
+
+    <div class="header-section">
+        <h2>Tambah Event Kegiatan</h2>
+        <p>Silakan isi detail kegiatan baru di bawah ini.</p>
+    </div>
+
+    <div class="form-container">
+        <form action="{{ url('/admin/event/store') }}" method="POST" enctype="multipart/form-data">
+            @csrf
+
+            <div class="form-group">
+                <label>Nama Event</label>
+                <input type="text" name="nama_event" class="form-control" required placeholder="Contoh: Seminar Nasional Teknologi">
+            </div>
+
+            <div class="form-group">
+                <label>Tanggal Event</label>
+                <input type="date" name="tanggal" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+                <label>Tempat Event</label>
+                <input type="text" name="tempat" class="form-control" placeholder="Contoh: Aula Gedung B">
+            </div>
+
+            <div class="form-group">
+                <label>Deskripsi Event</label>
+                <textarea name="deskripsi" class="form-control" rows="4" placeholder="Deskripsi singkat kegiatan..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Poster Event</label>
+                <input type="file" name="poster" class="form-control" required style="padding: 9px 16px;">
+            </div>
+
+            <div style="margin-top: 30px; display: flex; gap: 10px;">
+                <button type="submit" class="btn btn-primary">
+                    <i class="ph-bold ph-floppy-disk"></i> Simpan Event
+                </button>
+                <a href="{{ url('/admin/event') }}" class="btn btn-secondary">Batal</a>
+            </div>
+        </form>
+    </div>
+
+@endsection
