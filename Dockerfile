@@ -30,5 +30,3 @@ USER www-data
 # Install PHP dependencies for production
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Optimize Laravel (Optional step for caching config, routes, and views)
-RUN php artisan optimize:clear
