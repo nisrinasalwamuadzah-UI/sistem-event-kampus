@@ -33,6 +33,9 @@ services:
       - backend_network
     deploy:
       replicas: 2
+      placement:
+        constraints:
+          - node.hostname == swarm-worker-1
       restart_policy:
         condition: any
 
@@ -48,7 +51,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.role == manager
+          - node.hostname == swarm-worker-1
 
 volumes:
   mysql_data:
