@@ -1,0 +1,94 @@
+name: Deploy to Swarm
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  REGISTRY: ghcr.io
+  # Converts repository name to lowercase automatically
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Login using the built-in GITHUB_TOKEN (No GHCR_PAT needed here, but GHCR_PAT is needed for pulling on the VM)
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: type=raw,value=latest
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  deploy-to-swarm:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Connect to Tailscale VPN
+        uses: tailscale/github-action@v2
+        with:
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+          version: latest
+
+      - name: Copy Compose file to VM
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "docker-compose.yml"
+          target: "${{ secrets.DEPLOY_PATH }}"
+
+      - name: Deploy to Docker Swarm via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          PROD_APP_KEY: ${{ secrets.PROD_APP_KEY }}
+          PROD_DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+          APP_IMAGE: ghcr.io/${{ github.repository }}:latest
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: PROD_APP_KEY,PROD_DB_PASSWORD,APP_IMAGE
+          script: |
+            cd ${{ secrets.DEPLOY_PATH }}
+            
+            # Login ke GHCR di dalam VM agar bisa pull image private
+            echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            
+            # Tarik image terbaru
+            docker pull $APP_IMAGE
+            
+            # Export semua secret sebagai environment variable di terminal VM
+            export PROD_APP_KEY=$PROD_APP_KEY
+            export PROD_DB_PASSWORD=$PROD_DB_PASSWORD
+            export APP_IMAGE=$APP_IMAGE
+            
+            # Deploy stack (Swarm akan otomatis membaca environment variables di atas)
+            docker stack deploy -c docker-compose.yml sistem-event

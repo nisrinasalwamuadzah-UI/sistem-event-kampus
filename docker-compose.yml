@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   app:
-    image: sistem-event-kampus:latest
+    image: ${APP_IMAGE:-sistem-event-kampus:latest}
     build:
       context: .
       dockerfile: Dockerfile
@@ -12,7 +12,7 @@ services:
       - APP_ENV=production
       - APP_DEBUG=false
       - APP_URL=https://sistem-event.pbjt.web.id
-      - APP_KEY= # WAJIB DIISI SAAT DEPLOY
+      - APP_KEY=${PROD_APP_KEY}
       
       # Database Configuration
       - DB_CONNECTION=mysql
@@ -20,7 +20,7 @@ services:
       - DB_PORT=3306
       - DB_DATABASE=event_kampus
       - DB_USERNAME=root
-      - DB_PASSWORD=rahasia_db_password
+      - DB_PASSWORD=${PROD_DB_PASSWORD}
       
       # Optimization
       - CACHE_STORE=file
@@ -40,7 +40,7 @@ services:
     image: mysql:8.0
     environment:
       - MYSQL_DATABASE=event_kampus
-      - MYSQL_ROOT_PASSWORD=rahasia_db_password
+      - MYSQL_ROOT_PASSWORD=${PROD_DB_PASSWORD}
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
@@ -57,5 +57,4 @@ volumes:
 networks:
   ingress_network:
     external: true
-    # Pastikan nama jaringan ini sesuai dengan jaringan yang digunakan oleh priv-ingress
   backend_network:
