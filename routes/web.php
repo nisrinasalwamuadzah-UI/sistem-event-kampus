@@ -52,6 +52,8 @@ Route::get('/admin/dashboard', function () {
 
     $events = \App\Models\Event::latest()->get();
 
+    $mahasiswas = \App\Models\Mahasiswa::all();
+
     $totalEvent = \App\Models\Event::count();
 
     $totalHadir = \App\Models\Kehadiran::count();
@@ -60,6 +62,7 @@ Route::get('/admin/dashboard', function () {
 
     return view('admin.dashboard', compact(
         'events',
+        'mahasiswas',
         'totalEvent',
         'totalHadir',
         'totalTidakHadir'
