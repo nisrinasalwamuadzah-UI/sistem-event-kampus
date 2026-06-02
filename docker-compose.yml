@@ -35,7 +35,7 @@ services:
       replicas: 2
       placement:
         constraints:
-          - node.hostname == swarm-worker-1
+          - node.hostname == swarm-manager
       restart_policy:
         condition: any
 
@@ -51,7 +51,7 @@ services:
     deploy:
       placement:
         constraints:
-          - node.hostname == swarm-worker-1
+          - node.hostname == swarm-manager
 
 volumes:
   mysql_data:
