@@ -73,7 +73,7 @@ jobs:
           PROD_APP_URL: ${{ secrets.PROD_APP_URL }}
           DB_DATABASE: ${{ secrets.DB_DATABASE }}
           DB_USERNAME: ${{ secrets.DB_USERNAME }}
-          APP_IMAGE: ghcr.io/${{ github.repository }}:latest
+          APP_IMAGE: ghcr.io/nisrinasalwamuadzah-ui/sistem-event-kampus:latest
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
