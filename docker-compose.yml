@@ -11,15 +11,15 @@ services:
       - APP_NAME="Sistem Event Kampus"
       - APP_ENV=production
       - APP_DEBUG=false
-      - APP_URL=https://sistem-event.pbjt.web.id
+      - APP_URL=${PROD_APP_URL:-https://sistem-event.pbjt.web.id}
       - APP_KEY=${PROD_APP_KEY}
       
       # Database Configuration
       - DB_CONNECTION=mysql
       - DB_HOST=db
       - DB_PORT=3306
-      - DB_DATABASE=event_kampus
-      - DB_USERNAME=root
+      - DB_DATABASE=${DB_DATABASE:-event_kampus}
+      - DB_USERNAME=${DB_USERNAME:-root}
       - DB_PASSWORD=${PROD_DB_PASSWORD}
       
       # Optimization
@@ -42,7 +42,7 @@ services:
   db:
     image: mysql:8.0
     environment:
-      - MYSQL_DATABASE=event_kampus
+      - MYSQL_DATABASE=${DB_DATABASE:-event_kampus}
       - MYSQL_ROOT_PASSWORD=${PROD_DB_PASSWORD}
     volumes:
       - mysql_data:/var/lib/mysql
