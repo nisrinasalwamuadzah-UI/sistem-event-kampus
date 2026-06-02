@@ -96,5 +96,8 @@ jobs:
             export DB_USERNAME=$DB_USERNAME
             export APP_IMAGE=$APP_IMAGE
             
+            # Pastikan network eksternal sudah ada sebelum deploy
+            docker network create -d overlay ingress_network || true
+            
             # Deploy stack (Swarm akan otomatis membaca environment variables di atas)
             docker stack deploy -c docker-compose.yml sistem-event
