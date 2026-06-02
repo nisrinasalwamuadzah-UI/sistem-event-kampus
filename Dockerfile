@@ -7,8 +7,8 @@ COPY . .
 RUN npm run build
 
 # Stage 2: Serve Application
-# serversideup/php:8.3-fpm-nginx is heavily optimized for Laravel in production
-FROM serversideup/php:8.3-fpm-nginx
+# serversideup/php:8.4-fpm-nginx is heavily optimized for Laravel in production
+FROM serversideup/php:8.4-fpm-nginx
 
 # Set production environment variables
 ENV APP_ENV=production \
