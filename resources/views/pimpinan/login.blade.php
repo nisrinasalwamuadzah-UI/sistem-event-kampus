@@ -14,8 +14,7 @@
 
         body {
             font-family: 'Outfit', sans-serif;
-            /* Pimpinan uses a slightly different gradient (emerald/teal) to distinguish from admin */
-            background: linear-gradient(135deg, #064e3b 0%, #0f766e 100%);
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -74,14 +73,14 @@
         input:focus {
             outline: none;
             background: rgba(255, 255, 255, 0.15);
-            border-color: #10b981;
-            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
         }
 
         button {
             width: 100%;
             padding: 14px;
-            background: #10b981;
+            background: #3b82f6;
             color: white;
             border: none;
             border-radius: 12px;
@@ -94,9 +93,9 @@
         }
 
         button:hover {
-            background: #059669;
+            background: #2563eb;
             transform: translateY(-2px);
-            box-shadow: 0 10px 20px -10px rgba(5, 150, 105, 0.5);
+            box-shadow: 0 10px 20px -10px rgba(37, 99, 235, 0.5);
         }
 
         button:active {
