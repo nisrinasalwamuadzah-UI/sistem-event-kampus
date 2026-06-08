@@ -1,82 +1,137 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-    <title>Login Pimpinan</title>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Pimpinan - Sistem Event</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        body{
-            margin:0;
-            font-family:Poppins, sans-serif;
-            background: linear-gradient(135deg, #0f172a, #1e3a8a);
-            height:100vh;
-            display:flex;
-            justify-content:center;
-            align-items:center;
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
-        .card{
-            width:350px;
-            background:white;
-            padding:40px;
-            border-radius:20px;
-            box-shadow:0 20px 40px rgba(0,0,0,0.3);
-            text-align:center;
+        body {
+            font-family: 'Outfit', sans-serif;
+            /* Pimpinan uses a slightly different gradient (emerald/teal) to distinguish from admin */
+            background: linear-gradient(135deg, #064e3b 0%, #0f766e 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
         }
 
-        h2{
-            color:#1e3a8a;
-            margin-bottom:20px;
+        .card {
+            width: 100%;
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            padding: 40px 30px;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            animation: fadeIn 0.6s ease-out;
         }
 
-        input{
-            width:100%;
-            padding:12px;
-            margin:10px 0;
-            border:1px solid #ddd;
-            border-radius:10px;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        button{
-            width:100%;
-            padding:12px;
-            background:#2563eb;
-            color:white;
-            border:none;
-            border-radius:10px;
-            cursor:pointer;
+        h2 {
+            color: #ffffff;
+            margin-bottom: 30px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            font-size: 24px;
         }
 
-        button:hover{
-            background:#1e3a8a;
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
         }
 
-        .back{
-            margin-top:15px;
-            display:block;
-            font-size:12px;
-            color:#666;
-            text-decoration:none;
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 15px;
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #10b981;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #10b981;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        button:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -10px rgba(5, 150, 105, 0.5);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .back {
+            margin-top: 25px;
+            display: inline-block;
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .back:hover {
+            color: #ffffff;
         }
     </style>
-
 </head>
 <body>
 
 <div class="card">
-
     <h2>LOGIN PIMPINAN</h2>
-
     <form method="POST" action="{{ url('/pimpinan/login') }}">
         @csrf
-
-        <input type="text" name="username" placeholder="Username">
-        <input type="password" name="password" placeholder="Password">
-
-        <button type="submit">LOGIN</button>
+        <div class="input-group">
+            <input type="text" name="username" placeholder="Username" required>
+        </div>
+        <div class="input-group">
+            <input type="password" name="password" placeholder="Password" required>
+        </div>
+        <button type="submit">MASUK SEKARANG</button>
     </form>
-
-    <a class="back" href="{{ url('/') }}">Kembali</a>
-
+    <a class="back" href="{{ url('/') }}">← Kembali ke Beranda</a>
 </div>
 
 </body>
