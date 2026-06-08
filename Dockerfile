@@ -32,5 +32,6 @@ COPY --chown=www-data:www-data --from=frontend /app/public/build /var/www/html/p
 USER www-data
 
 # Install PHP dependencies for production
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+RUN composer install --no-dev --optimize-autoloader --no-interaction && \
+    composer clear-cache
 
