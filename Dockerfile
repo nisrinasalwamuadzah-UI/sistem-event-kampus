@@ -21,6 +21,10 @@ USER root
 # Copy application codebase
 COPY --chown=www-data:www-data . /var/www/html/
 
+# Force Nginx to listen on port 8085 instead of the default 8080
+RUN sed -i 's/listen 8080/listen 8085/g' /etc/nginx/conf.d/*.conf || true
+RUN sed -i 's/listen 8080/listen 8085/g' /etc/nginx/sites-available/* || true
+
 # Copy built Vite assets from the frontend stage
 COPY --chown=www-data:www-data --from=frontend /app/public/build /var/www/html/public/build
 
