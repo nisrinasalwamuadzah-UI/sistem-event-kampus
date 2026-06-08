@@ -97,7 +97,7 @@ jobs:
             export APP_IMAGE=$APP_IMAGE
             
             # Pastikan network eksternal sudah ada sebelum deploy
-            docker network create -d overlay ingress_network || true
+            docker network create -d overlay front-tier || true
             
             # Deploy stack (Swarm akan otomatis membaca environment variables di atas)
             docker stack deploy -c docker-compose.yml sistem-event
