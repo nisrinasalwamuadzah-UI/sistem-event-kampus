@@ -10,6 +10,16 @@
     </div>
 
     <div class="form-container">
+        @if ($errors->any())
+            <div class="alert alert-danger" style="background-color: #ffcccc; color: #cc0000; padding: 15px; margin-bottom: 20px; border-radius: 8px;">
+                <ul style="margin: 0; padding-left: 20px;">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <form action="{{ url('/admin/event/update/'.$event->id) }}" method="POST" enctype="multipart/form-data">
             @csrf
 

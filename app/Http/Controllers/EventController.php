@@ -20,25 +20,27 @@ class EventController extends Controller
     }
     
     public function store(Request $request)
-{
-    $poster = null;
+    {
+        $request->validate([
+            'nama_event' => 'required|string|max:255',
+            'tanggal' => 'required|date',
+            'tempat' => 'nullable|string|max:255',
+            'deskripsi' => 'nullable|string',
+            'poster' => 'required|image|mimes:jpeg,png,jpg,gif|max:5120', // max 5MB
+        ]);
 
-    if ($request->hasFile('poster')) {
+        $poster = $request->file('poster')->store('event', 'public');
 
-        $poster = $request->file('poster')
-            ->store('event', 'public');
+        Event::create([
+            'nama_event' => $request->nama_event,
+            'tanggal' => $request->tanggal,
+            'tempat' => $request->tempat,
+            'deskripsi' => $request->deskripsi,
+            'poster' => $poster,
+        ]);
+
+        return redirect('/admin/event')->with('success', 'Event berhasil ditambahkan!');
     }
-
-    Event::create([
-        'nama_event' => $request->nama_event,
-        'tanggal' => $request->tanggal,
-        'tempat' => $request->tempat,
-        'deskripsi' => $request->deskripsi,
-        'poster' => $poster,
-    ]);
-
-    return redirect('/admin/event');
-}
 
     public function edit($id)
     {
@@ -51,10 +53,16 @@ class EventController extends Controller
     {
         $event = Event::findOrFail($id);
 
+        $request->validate([
+            'nama_event' => 'required|string|max:255',
+            'tanggal' => 'required|date',
+            'tempat' => 'nullable|string|max:255',
+            'deskripsi' => 'nullable|string',
+            'poster' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // max 5MB
+        ]);
+
         if ($request->hasFile('poster')) {
-
             $poster = $request->file('poster')->store('event', 'public');
-
             $event->poster = $poster;
         }
 
@@ -65,9 +73,7 @@ class EventController extends Controller
             'deskripsi' => $request->deskripsi,
         ]);
 
-        $event->save();
-
-        return redirect('/admin/event');
+        return redirect('/admin/event')->with('success', 'Event berhasil diupdate!');
     }
 
     public function delete($id)

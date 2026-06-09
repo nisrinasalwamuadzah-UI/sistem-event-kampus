@@ -33,3 +33,6 @@ USER www-data
 RUN composer install --no-dev --optimize-autoloader --no-interaction && \
     composer clear-cache
 
+# Create storage symlink
+RUN php artisan storage:link
+
