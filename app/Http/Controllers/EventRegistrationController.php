@@ -59,18 +59,15 @@ class EventRegistrationController extends Controller
         $ticket_nim = session('ticket_nim');
         $ticket_nama = session('ticket_nama');
 
-        return view('event.ticket', compact('event', 'ticket_nim', 'ticket_nama'));
-    }
-
-    public function qrCodeImage($id, $nim)
-    {
-        $image = \SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')
-            ->size(260)
+        // Generate SVG secara inline. Ini menjamin html2canvas bisa merendernya
+        // karena SVG adalah elemen HTML native (path/rect), bukan file gambar external.
+        $qr_svg = \SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')
+            ->size(220)
             ->errorCorrection('H')
             ->margin(1)
             ->merge(public_path('images/logo.png'), 0.30, true)
-            ->generate($nim);
+            ->generate($ticket_nim);
 
-        return response($image)->header('Content-Type', 'image/png');
+        return view('event.ticket', compact('event', 'ticket_nim', 'ticket_nama', 'qr_svg'));
     }
 }

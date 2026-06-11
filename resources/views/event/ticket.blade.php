@@ -280,13 +280,7 @@
 
             {{-- QR Code dengan Logo di tengah --}}
             <div class="qr-container">
-                <img
-                    id="qr-image"
-                    src="/event/{{ $event->id }}/qr/{{ $ticket_nim }}"
-                    width="220"
-                    height="220"
-                    alt="QR Code Tiket"
-                >
+                {!! $qr_svg !!}
             </div>
 
             {{-- Info Peserta --}}
@@ -322,34 +316,13 @@ function downloadTicket() {
     btn.disabled = true;
 
     const ticketElement = document.getElementById('ticket-card');
-    const scale = 3;
 
     html2canvas(ticketElement, {
-        scale: scale,
+        scale: 3,
         backgroundColor: '#ffffff',
         logging: false,
         useCORS: true,
     }).then(canvas => {
-        // Trik Master: Karena html2canvas sering gagal merender gambar QR secara internal,
-        // kita akan "menstempel" gambar QR secara manual ke atas canvas hasil akhir!
-        const qrImg = document.getElementById('qr-image');
-        if (qrImg) {
-            const ctx = canvas.getContext('2d');
-            const qrRect = qrImg.getBoundingClientRect();
-            const ticketRect = ticketElement.getBoundingClientRect();
-            
-            // Hitung posisi relatif presisi tingkat pixel
-            const x = (qrRect.left - ticketRect.left) * scale;
-            const y = (qrRect.top - ticketRect.top) * scale;
-            const width = qrRect.width * scale;
-            const height = qrRect.height * scale;
-            
-            // Bersihkan area dengan putih bersih lalu stempel gambar QR aslinya
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(x, y, width, height);
-            ctx.drawImage(qrImg, x, y, width, height);
-        }
-
         const image = canvas.toDataURL('image/png');
         const link = document.createElement('a');
         link.download = 'Tiket_{{ str_replace(" ", "_", $event->nama_event) }}_{{ $ticket_nim }}.png';
