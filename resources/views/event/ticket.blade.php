@@ -107,7 +107,7 @@
         </div>
 
         <div class="qr-container">
-            {!! QrCode::size(200)->margin(0)->generate($ticket_nim) !!}
+            <img src="data:image/png;base64, {!! base64_encode(QrCode::format('png')->size(250)->errorCorrection('H')->margin(1)->merge(public_path('images/logo.png'), 0.25, true)->generate($ticket_nim)) !!}" alt="QR Code Tiket">
         </div>
 
         <div class="mhs-name">{{ $ticket_nama }}</div>
