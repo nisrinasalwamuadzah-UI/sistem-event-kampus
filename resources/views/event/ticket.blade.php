@@ -128,11 +128,9 @@
         }
         .divider-line {
             flex: 1;
-            height: 1px;
-            background: linear-gradient(to right, transparent, #e2e8f0);
-        }
-        .divider-line.right {
-            background: linear-gradient(to left, transparent, #e2e8f0);
+            height: 2px;
+            background: #e2e8f0;
+            border-radius: 2px;
         }
         .divider-dot {
             width: 6px; height: 6px;
@@ -157,7 +155,7 @@
 
         /* Attendee info */
         .attendee-section {
-            background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+            background: #f5f3ff;
             border-radius: 14px;
             padding: 14px 20px;
         }
