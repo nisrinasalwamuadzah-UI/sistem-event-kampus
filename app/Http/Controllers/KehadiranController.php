@@ -21,8 +21,12 @@ class KehadiranController extends Controller
             'event_id' => 'required|exists:events,id'
         ]);
 
-        $nim = trim($request->nim);
-        $mhs = Mahasiswa::where('nim', $nim)->first();
+        $nim_input = trim($request->nim);
+        // Hapus semua karakter titik, spasi, atau strip dari input scanner
+        $clean_nim = str_replace(['.', ' ', '-'], '', $nim_input);
+        
+        // Cari mahasiswa dengan mengabaikan titik di database
+        $mhs = Mahasiswa::whereRaw("REPLACE(nim, '.', '') = ?", [$clean_nim])->first();
 
         if (!$mhs) {
             return back()->with('error', 'Mahasiswa tidak ditemukan');

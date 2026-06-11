@@ -181,6 +181,16 @@ Route::post('/admin/scan', [KehadiranController::class, 'store']);
 
 /*
 |--------------------------------------------------------------------------
+| EVENT REGISTRATION
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/event/{id}/register', [App\Http\Controllers\EventRegistrationController::class, 'showRegistrationForm']);
+Route::post('/event/{id}/register', [App\Http\Controllers\EventRegistrationController::class, 'processRegistration']);
+Route::get('/event/{id}/ticket', [App\Http\Controllers\EventRegistrationController::class, 'showTicket']);
+
+/*
+|--------------------------------------------------------------------------
 | LOGOUT
 |--------------------------------------------------------------------------
 */

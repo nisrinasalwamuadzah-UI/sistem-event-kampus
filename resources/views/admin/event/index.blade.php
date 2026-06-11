@@ -32,14 +32,19 @@
                 </div>
 
                 <div class="event-actions">
-                    <a href="{{ url('/admin/event/edit/'.$event->id) }}" class="btn btn-sm btn-secondary" style="flex: 1;">
-                        <i class="ph-bold ph-pencil-simple"></i> Edit
-                    </a>
-                    <a href="{{ url('/admin/event/delete/'.$event->id) }}" 
-                       onclick="return confirm('Yakin mau hapus event ini?')" 
-                       class="btn btn-sm btn-danger" style="flex: 1;">
-                        <i class="ph-bold ph-trash"></i> Hapus
-                    </a>
+                    <button onclick="copyToClipboard('{{ url('/event/'.$event->id.'/register') }}')" class="btn btn-sm btn-primary" style="flex: 1; margin-bottom: 8px; width: 100%;">
+                        <i class="ph-bold ph-link"></i> Link Daftar
+                    </button>
+                    <div style="display: flex; gap: 8px;">
+                        <a href="{{ url('/admin/event/edit/'.$event->id) }}" class="btn btn-sm btn-secondary" style="flex: 1;">
+                            <i class="ph-bold ph-pencil-simple"></i> Edit
+                        </a>
+                        <a href="{{ url('/admin/event/delete/'.$event->id) }}" 
+                           onclick="return confirm('Yakin mau hapus event ini?')" 
+                           class="btn btn-sm btn-danger" style="flex: 1;">
+                            <i class="ph-bold ph-trash"></i> Hapus
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

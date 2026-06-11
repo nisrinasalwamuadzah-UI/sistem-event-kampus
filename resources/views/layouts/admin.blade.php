@@ -88,6 +88,16 @@
         }
     </style>
 
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(function() {
+                alert('Link Registrasi berhasil di-copy:\n' + text);
+            }, function(err) {
+                alert('Gagal copy link: ', err);
+            });
+        }
+    </script>
+
     @yield('extra_js')
 </body>
 </html>

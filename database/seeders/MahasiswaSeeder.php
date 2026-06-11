@@ -218,6 +218,19 @@ class MahasiswaSeeder extends Seeder
             ['nim' => '254110017', 'nama' => 'Muhammad Ma\'Riffatur Rizqi', 'jurusan' => 'Teknik Elektronika Industri', 'semester' => '2', 'alamat' => '-'],
         ];
 
+        // Format ulang NIM dengan penambahan titik
+        foreach ($dataMahasiswa as &$data) {
+            $nim = $data['nim'];
+            if (strlen($nim) === 8) {
+                // Contoh: 23190008 -> 23.1.9.0008
+                $data['nim'] = substr($nim, 0, 2) . '.' . substr($nim, 2, 1) . '.' . substr($nim, 3, 1) . '.' . substr($nim, 4);
+            } elseif (strlen($nim) === 9) {
+                // Contoh: 241100001 -> 24.1.10.0001
+                $data['nim'] = substr($nim, 0, 2) . '.' . substr($nim, 2, 1) . '.' . substr($nim, 3, 2) . '.' . substr($nim, 5);
+            }
+        }
+        unset($data); // Break reference
+
         // Looping untuk menjalankan formasi \App\Models\Mahasiswa::create() secara massal
         foreach ($dataMahasiswa as $data) {
             \App\Models\Mahasiswa::create($data);
