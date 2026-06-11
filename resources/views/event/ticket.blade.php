@@ -99,7 +99,7 @@
     <div id="ticket-card">
         <div class="logo-container">
             <!-- Menampilkan SVG Logo Bawaan Aplikasi -->
-            @include('components.application-logo')
+            <x-application-logo />
         </div>
         
         <div class="event-title">
