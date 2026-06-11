@@ -278,9 +278,15 @@
                 <div class="divider-line right"></div>
             </div>
 
-            {{-- QR Code dengan Logo di tengah --}}
+            {{-- QR Code dengan Logo di tengah (Overlay HTML CSS karena format SVG tidak mendukung merge image internal) --}}
             <div class="qr-container">
-                {!! $qr_svg !!}
+                <div style="position: relative; display: inline-block; width: 220px; height: 220px;">
+                    {!! $qr_svg !!}
+                    {{-- Logo ditengah QR Code. Ukuran 66px (30% dari 220px), posisi tengah (220-66)/2 = 77px --}}
+                    <div style="position: absolute; top: 77px; left: 77px; width: 66px; height: 66px; background: white; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
+                        <img src="/images/logo.png" style="max-width: 56px; max-height: 56px; object-fit: contain;" alt="Center Logo">
+                    </div>
+                </div>
             </div>
 
             {{-- Info Peserta --}}

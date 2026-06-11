@@ -65,7 +65,6 @@ class EventRegistrationController extends Controller
             ->size(220)
             ->errorCorrection('H')
             ->margin(1)
-            ->merge(public_path('images/logo.png'), 0.30, true)
             ->generate($ticket_nim);
 
         return view('event.ticket', compact('event', 'ticket_nim', 'ticket_nama', 'qr_svg'));
