@@ -18,8 +18,8 @@ ENV APP_ENV=production \
 # Temporarily switch to root to copy files with proper ownership
 USER root
 
-# Install imagick extension for simple-qrcode PNG generation
-RUN install-php-extensions imagick
+# Install gd (for composer requirements) and imagick (for PNG generation)
+RUN install-php-extensions gd imagick
 
 # Copy application codebase
 COPY --chown=www-data:www-data . /var/www/html/
