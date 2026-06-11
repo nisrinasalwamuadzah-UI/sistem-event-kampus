@@ -281,7 +281,7 @@
             {{-- QR Code dengan Logo di tengah --}}
             <div class="qr-container">
                 <img
-                    src="data:image/png;base64, {!! base64_encode(QrCode::format('png')->size(260)->errorCorrection('H')->margin(1)->merge(public_path('images/logo.png'), 0.30, true)->generate($ticket_nim)) !!}"
+                    src="data:image/png;base64,{!! base64_encode(QrCode::format('png')->size(260)->errorCorrection('H')->margin(1)->merge(public_path('images/logo.png'), 0.30, true)->generate($ticket_nim)) !!}"
                     width="220"
                     height="220"
                     alt="QR Code Tiket"
