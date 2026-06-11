@@ -267,7 +267,7 @@
 
             {{-- Logo sebagai badge bulat kecil --}}
             <div class="logo-badge">
-                <img src="{{ asset('images/logo.png') }}" alt="Logo Kampus">
+                <img src="/images/logo.png" alt="Logo Kampus">
             </div>
 
             <div class="divider">
@@ -282,7 +282,7 @@
             <div class="qr-container">
                 <img
                     id="qr-image"
-                    src="{{ url('/event/' . $event->id . '/qr/' . $ticket_nim) }}"
+                    src="/event/{{ $event->id }}/qr/{{ $ticket_nim }}"
                     width="220"
                     height="220"
                     alt="QR Code Tiket"
@@ -322,47 +322,14 @@ function downloadTicket() {
     btn.disabled = true;
 
     const ticketElement = document.getElementById('ticket-card');
-    
-    // Trik paling ampuh untuk html2canvas:
-    // Ubah gambar QR (IMG) menjadi CANVAS secara native sebelum di-screenshot.
-    // Karena html2canvas dijamin 100% berhasil merekam elemen canvas yang sudah ada.
-    const qrImg = document.getElementById('qr-image');
-    let tempCanvas = null;
-    
-    if (qrImg) {
-        try {
-            tempCanvas = document.createElement('canvas');
-            tempCanvas.width = qrImg.width || 220;
-            tempCanvas.height = qrImg.height || 220;
-            tempCanvas.style.display = 'block';
-            tempCanvas.style.margin = '0 auto';
-            
-            const ctx = tempCanvas.getContext('2d');
-            // Isi dengan warna putih dulu agar aman
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-            // Salin pixel gambar ke dalam canvas
-            ctx.drawImage(qrImg, 0, 0, tempCanvas.width, tempCanvas.height);
-            
-            // Ganti element img dengan canvas untuk sementara
-            qrImg.parentNode.replaceChild(tempCanvas, qrImg);
-        } catch (e) {
-            console.warn('Canvas swap failed, proceeding with original img', e);
-            tempCanvas = null; // Batalkan swap jika gagal
-        }
-    }
 
     html2canvas(ticketElement, {
         scale: 3,
         backgroundColor: '#ffffff',
-        logging: true,
+        logging: false,
         useCORS: true,
+        allowTaint: false
     }).then(canvas => {
-        // Kembalikan elemen canvas menjadi img seperti semula
-        if (tempCanvas && qrImg) {
-            tempCanvas.parentNode.replaceChild(qrImg, tempCanvas);
-        }
-
         const image = canvas.toDataURL('image/png');
         const link = document.createElement('a');
         link.download = 'Tiket_{{ str_replace(" ", "_", $event->nama_event) }}_{{ $ticket_nim }}.png';
@@ -375,10 +342,6 @@ function downloadTicket() {
             btn.disabled = false;
         }, 2500);
     }).catch(err => {
-        // Kembalikan elemen jika terjadi error
-        if (tempCanvas && qrImg && tempCanvas.parentNode) {
-            tempCanvas.parentNode.replaceChild(qrImg, tempCanvas);
-        }
         console.error("html2canvas error:", err);
         btn.innerHTML = '<i class="ph-bold ph-warning"></i> Gagal, Coba Lagi';
         btn.disabled = false;
