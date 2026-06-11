@@ -61,4 +61,16 @@ class EventRegistrationController extends Controller
 
         return view('event.ticket', compact('event', 'ticket_nim', 'ticket_nama'));
     }
+
+    public function qrCodeImage($id, $nim)
+    {
+        $image = \SimpleSoftwareIO\QrCode\Facades\QrCode::format('png')
+            ->size(260)
+            ->errorCorrection('H')
+            ->margin(1)
+            ->merge(public_path('images/logo.png'), 0.30, true)
+            ->generate($nim);
+
+        return response($image)->header('Content-Type', 'image/png');
+    }
 }

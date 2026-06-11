@@ -188,6 +188,7 @@ Route::post('/admin/scan', [KehadiranController::class, 'store']);
 Route::get('/event/{id}/register', [App\Http\Controllers\EventRegistrationController::class, 'showRegistrationForm']);
 Route::post('/event/{id}/register', [App\Http\Controllers\EventRegistrationController::class, 'processRegistration']);
 Route::get('/event/{id}/ticket', [App\Http\Controllers\EventRegistrationController::class, 'showTicket']);
+Route::get('/event/{id}/qr/{nim}', [App\Http\Controllers\EventRegistrationController::class, 'qrCodeImage']);
 
 /*
 |--------------------------------------------------------------------------
