@@ -49,7 +49,7 @@
                 <i class="ph-bold ph-qr-code"></i> Mode QR Code
             </button>
             <button type="button" id="btnModeBarcode" onclick="setMode('barcode')" class="btn btn-secondary" style="flex: 1; padding: 12px; border-radius: 12px; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0;">
-                <i class="ph-bold ph-barcode"></i> Mode Barcode KTM
+                <i class="ph-bold ph-barcode"></i> Mode Barcode
             </button>
         </div>
 
