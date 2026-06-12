@@ -52,4 +52,90 @@ class MahasiswaController extends Controller
 
         return view('admin.mahasiswa.index', compact('mahasiswas', 'angkatans', 'angkatan'));
     }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'csv_file' => 'required|file|mimes:csv,txt|max:2048',
+        ], [
+            'csv_file.required' => 'Silakan pilih file CSV terlebih dahulu.',
+            'csv_file.mimes' => 'File harus berformat .csv atau .txt',
+            'csv_file.max' => 'Ukuran file maksimal 2MB',
+        ]);
+
+        $file = $request->file('csv_file');
+        
+        $handle = fopen($file->getRealPath(), "r");
+        
+        // Baca header CSV
+        $header = fgetcsv($handle, 1000, ",");
+        
+        // Validasi header sederhana
+        if (!$header || strtolower($header[0]) !== 'nim') {
+            fclose($handle);
+            return back()->with('error', 'Format CSV tidak valid. Pastikan kolom pertama adalah NIM. Silakan unduh template jika ragu.');
+        }
+
+        $importedCount = 0;
+        $updatedCount = 0;
+
+        while (($row = fgetcsv($handle, 1000, ",")) !== false) {
+            // Abaikan baris kosong
+            if (empty(array_filter($row))) continue;
+
+            $nim = trim($row[0] ?? '');
+            $nama = trim($row[1] ?? '');
+            $jurusan = trim($row[2] ?? '');
+            $semester = trim($row[3] ?? '');
+            $alamat = trim($row[4] ?? '-');
+
+            if (empty($nim) || empty($nama)) continue;
+
+            $mahasiswa = Mahasiswa::where('nim', $nim)->first();
+
+            if ($mahasiswa) {
+                // Update
+                $mahasiswa->update([
+                    'nama' => $nama,
+                    'jurusan' => $jurusan,
+                    'semester' => $semester,
+                    'alamat' => $alamat
+                ]);
+                $updatedCount++;
+            } else {
+                // Create
+                Mahasiswa::create([
+                    'nim' => $nim,
+                    'nama' => $nama,
+                    'jurusan' => $jurusan,
+                    'semester' => $semester,
+                    'alamat' => $alamat
+                ]);
+                $importedCount++;
+            }
+        }
+
+        fclose($handle);
+
+        return back()->with('success', "Import berhasil! $importedCount data baru ditambahkan, $updatedCount data diperbarui.");
+    }
+
+    public function downloadTemplate()
+    {
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="Template_Import_Mahasiswa.csv"',
+        ];
+
+        $callback = function() {
+            $file = fopen('php://output', 'w');
+            // Header row
+            fputcsv($file, ['NIM', 'Nama Lengkap', 'Jurusan', 'Semester', 'Alamat']);
+            // Sample row
+            fputcsv($file, ['24.1.9.0001', 'John Doe', 'Teknik Informatika', '4', 'Jl. Sudirman No 1']);
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }

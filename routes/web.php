@@ -96,6 +96,8 @@ Route::post('/admin/event/{id}/peserta', [EventController::class, 'updatePeserta
 */
 
 Route::get('/admin/mahasiswa', [App\Http\Controllers\MahasiswaController::class, 'index']);
+Route::post('/admin/mahasiswa/import', [App\Http\Controllers\MahasiswaController::class, 'import']);
+Route::get('/admin/mahasiswa/template', [App\Http\Controllers\MahasiswaController::class, 'downloadTemplate']);
 
 /*
 |--------------------------------------------------------------------------
