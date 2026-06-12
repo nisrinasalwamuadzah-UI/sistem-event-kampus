@@ -11,7 +11,7 @@
         </div>
         
         <form method="GET" action="{{ url('/admin/mahasiswa') }}" style="display: flex; gap: 8px;">
-            <select name="angkatan" class="form-control" style="width: auto; padding: 8px 36px 8px 12px; border-radius: 8px; appearance: auto; cursor: pointer;">
+            <select name="angkatan" class="form-control" style="min-width: 170px; width: auto; padding: 8px 40px 8px 12px; border-radius: 8px; cursor: pointer;">
                 <option value="">Semua Angkatan</option>
                 @foreach($angkatans as $thn)
                     <option value="{{ $thn }}" {{ $angkatan == $thn ? 'selected' : '' }}>Angkatan {{ $thn }}</option>
