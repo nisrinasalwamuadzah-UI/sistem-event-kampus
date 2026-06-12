@@ -282,9 +282,9 @@
             <div class="qr-container">
                 <div style="position: relative; display: inline-block; width: 220px; height: 220px;">
                     {!! $qr_svg !!}
-                    {{-- Logo ditengah QR Code. Ukuran 66px (30% dari 220px), posisi tengah (220-66)/2 = 77px --}}
-                    <div style="position: absolute; top: 77px; left: 77px; width: 66px; height: 66px; background: white; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
-                        <img src="/images/logo.png" style="max-width: 56px; max-height: 56px; object-fit: contain;" alt="Center Logo">
+                    {{-- Logo ditengah QR Code. Ukuran 44px (20% dari 220px), posisi tengah (220-44)/2 = 88px --}}
+                    <div style="position: absolute; top: 88px; left: 88px; width: 44px; height: 44px; background: white; display: flex; align-items: center; justify-content: center; border-radius: 6px;">
+                        <img src="/images/logo.png" style="max-width: 36px; max-height: 36px; object-fit: contain;" alt="Center Logo">
                     </div>
                 </div>
             </div>
