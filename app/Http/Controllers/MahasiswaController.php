@@ -15,9 +15,17 @@ class MahasiswaController extends Controller
         $angkatan = $request->get('angkatan');
         if ($angkatan) {
             // Asumsi: 2 digit pertama NIM adalah angkatan, misal: 23190012 -> Angkatan 23
-            // Di MySQL bisa pakai LIKE '23%'
             $prefix = substr($angkatan, -2); // Ambil '23' dari '2023'
-            $query->where('nim', 'like', $prefix . '%');
+            
+            if ($prefix == '23') {
+                $query->where(function($q) use ($prefix) {
+                    $q->where('nim', 'like', $prefix . '%')
+                      ->orWhere('nim', 'like', '22%'); // Pengecualian Misbahudin (NIM awal 22)
+                });
+            } else {
+                $query->where('nim', 'like', $prefix . '%')
+                      ->where('nim', 'not like', '22%'); // Pastikan tidak muncul di angkatan lain
+            }
         }
 
         $mahasiswas = $query->get();
@@ -29,6 +37,12 @@ class MahasiswaController extends Controller
             if(strlen($nim) >= 2) {
                 $prefix = substr($nim, 0, 2);
                 $year = "20" . $prefix; // Asumsi tahun 20xx
+                
+                // Pengecualian: Misbahudin (NIM 22...) digabungkan ke 2023
+                if ($prefix == '22') {
+                    $year = "2023";
+                }
+
                 if (!isset($angkatans[$year])) {
                     $angkatans[$year] = $year;
                 }
