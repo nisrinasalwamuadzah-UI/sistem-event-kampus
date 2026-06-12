@@ -9,11 +9,9 @@ class Mahasiswa extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
         'nim',
         'nama',
         'jurusan',
-        'semester',
-        'alamat'
+        'semester'
     ];
 }

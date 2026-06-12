@@ -87,7 +87,6 @@ class MahasiswaController extends Controller
             $nama = trim($row[1] ?? '');
             $jurusan = trim($row[2] ?? '');
             $semester = trim($row[3] ?? '');
-            $alamat = trim($row[4] ?? '-');
 
             if (empty($nim) || empty($nama)) continue;
 
@@ -98,8 +97,7 @@ class MahasiswaController extends Controller
                 $mahasiswa->update([
                     'nama' => $nama,
                     'jurusan' => $jurusan,
-                    'semester' => $semester,
-                    'alamat' => $alamat
+                    'semester' => $semester
                 ]);
                 $updatedCount++;
             } else {
@@ -108,8 +106,7 @@ class MahasiswaController extends Controller
                     'nim' => $nim,
                     'nama' => $nama,
                     'jurusan' => $jurusan,
-                    'semester' => $semester,
-                    'alamat' => $alamat
+                    'semester' => $semester
                 ]);
                 $importedCount++;
             }
@@ -130,9 +127,9 @@ class MahasiswaController extends Controller
         $callback = function() {
             $file = fopen('php://output', 'w');
             // Header row
-            fputcsv($file, ['NIM', 'Nama Lengkap', 'Jurusan', 'Semester', 'Alamat']);
+            fputcsv($file, ['NIM', 'Nama Lengkap', 'Jurusan', 'Semester']);
             // Sample row
-            fputcsv($file, ['24.1.9.0001', 'John Doe', 'Teknik Informatika', '4', 'Jl. Sudirman No 1']);
+            fputcsv($file, ['24.1.9.0001', 'John Doe', 'Teknik Informatika', '4']);
             fclose($file);
         };
 
