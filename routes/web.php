@@ -86,6 +86,17 @@ Route::post('/admin/event/update/{id}', [EventController::class, 'update']);
 
 Route::get('/admin/event/delete/{id}', [EventController::class, 'delete']);
 
+Route::get('/admin/event/{id}/peserta', [EventController::class, 'peserta']);
+Route::post('/admin/event/{id}/peserta', [EventController::class, 'updatePeserta']);
+
+/*
+|--------------------------------------------------------------------------
+| MAHASISWA
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/admin/mahasiswa', [App\Http\Controllers\MahasiswaController::class, 'index']);
+
 /*
 |--------------------------------------------------------------------------
 | PIMPINAN LOGIN
@@ -181,13 +192,9 @@ Route::post('/admin/scan', [KehadiranController::class, 'store']);
 
 /*
 |--------------------------------------------------------------------------
-| EVENT REGISTRATION
+| EVENT REGISTRATION (REMOVED)
 |--------------------------------------------------------------------------
 */
-
-Route::get('/event/{id}/register', [App\Http\Controllers\EventRegistrationController::class, 'showRegistrationForm']);
-Route::post('/event/{id}/register', [App\Http\Controllers\EventRegistrationController::class, 'processRegistration']);
-Route::get('/event/{id}/ticket', [App\Http\Controllers\EventRegistrationController::class, 'showTicket']);
 
 /*
 |--------------------------------------------------------------------------

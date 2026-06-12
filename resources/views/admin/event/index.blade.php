@@ -32,9 +32,9 @@
                 </div>
 
                 <div class="event-actions">
-                    <button onclick="copyToClipboard('{{ url('/event/'.$event->id.'/register') }}')" class="btn btn-sm btn-primary" style="flex: 1; margin-bottom: 8px; width: 100%;">
-                        <i class="ph-bold ph-link"></i> Link Daftar
-                    </button>
+                    <a href="{{ url('/admin/event/'.$event->id.'/peserta') }}" class="btn btn-sm btn-primary" style="flex: 1; margin-bottom: 8px; width: 100%;">
+                        <i class="ph-bold ph-users"></i> Daftar Mahasiswa
+                    </a>
                     <div style="display: flex; gap: 8px;">
                         <a href="{{ url('/admin/event/edit/'.$event->id) }}" class="btn btn-sm btn-secondary" style="flex: 1;">
                             <i class="ph-bold ph-pencil-simple"></i> Edit

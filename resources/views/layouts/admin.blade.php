@@ -32,6 +32,10 @@
                     <i class="ph ph-calendar-check"></i>
                     <span>Kelola Event</span>
                 </a>
+                <a href="{{ url('/admin/mahasiswa') }}" class="{{ request()->is('admin/mahasiswa*') ? 'active' : '' }}">
+                    <i class="ph ph-users-three"></i>
+                    <span>Data Mahasiswa</span>
+                </a>
                 <a href="{{ url('/admin/kehadiran') }}" class="{{ request()->is('admin/kehadiran*') ? 'active' : '' }}">
                     <i class="ph ph-users"></i>
                     <span>Kehadiran</span>

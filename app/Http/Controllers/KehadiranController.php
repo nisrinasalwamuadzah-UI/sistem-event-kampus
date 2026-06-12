@@ -29,7 +29,17 @@ class KehadiranController extends Controller
         $mhs = Mahasiswa::whereRaw("REPLACE(nim, '.', '') = ?", [$clean_nim])->first();
 
         if (!$mhs) {
-            return back()->with('error', 'Mahasiswa tidak ditemukan');
+            return back()->with('error', 'Mahasiswa tidak ditemukan di database kampus');
+        }
+
+        // Cek Eligibility (Apakah mahasiswa ini didaftarkan ke event ini?)
+        $isRegistered = \Illuminate\Support\Facades\DB::table('event_mahasiswa')
+            ->where('event_id', $request->event_id)
+            ->where('nim', $mhs->nim)
+            ->exists();
+
+        if (!$isRegistered) {
+            return back()->with('error', 'Akses Ditolak: Mahasiswa ini tidak terdaftar sebagai peserta event ini');
         }
 
         $exists = Kehadiran::where('nim', $mhs->nim)->where('event_id', $request->event_id)->exists();

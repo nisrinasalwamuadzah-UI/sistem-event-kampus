@@ -43,6 +43,16 @@
             </div>
         @endif
 
+        <!-- MODE TOGGLE -->
+        <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+            <button type="button" id="btnModeQR" onclick="setMode('qr')" class="btn btn-primary" style="flex: 1; padding: 12px; border-radius: 12px;">
+                <i class="ph-bold ph-qr-code"></i> Mode QR Code
+            </button>
+            <button type="button" id="btnModeBarcode" onclick="setMode('barcode')" class="btn btn-secondary" style="flex: 1; padding: 12px; border-radius: 12px; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0;">
+                <i class="ph-bold ph-barcode"></i> Mode Barcode KTM
+            </button>
+        </div>
+
         <!-- QR SCANNER -->
         <div id="reader" style="width: 100%; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; margin-bottom: 16px;"></div>
 
@@ -51,7 +61,7 @@
 
         <!-- UPLOAD GAMBAR MANUAL -->
         <div style="background:#f8fafc; padding:20px; border-radius:12px; border:2px dashed #cbd5e1; margin-bottom:24px; text-align: center;">
-            <label style="display: block; margin-bottom:12px; font-weight: 500; color: #334155;">Atau Upload Screenshot QR Code</label>
+            <label style="display: block; margin-bottom:12px; font-weight: 500; color: #334155;">Atau Upload Screenshot Barcode/QR</label>
             <input type="file" id="qr-input-file" accept="image/*" style="border:none; padding:0; background:transparent; max-width: 100%;">
             <div id="upload-status" style="color: #ef4444; font-size: 13px; margin-top: 10px; display: none;"></div>
         </div>
@@ -96,22 +106,79 @@
 <!-- QR CODE SCRIPT -->
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script>
+let html5QrcodeScanner = null;
+let currentMode = 'qr';
+
 function onScanSuccess(decodedText, decodedResult) {
-    if (html5QrcodeScanner.getState() === Html5QrcodeScannerState.SCANNING) {
+    if (html5QrcodeScanner && html5QrcodeScanner.getState() === Html5QrcodeScannerState.SCANNING) {
         html5QrcodeScanner.pause();
     }
     document.getElementById('nim').value = decodedText.trim();
     document.getElementById('scanForm').submit();
 }
 
-let html5QrcodeScanner = new Html5QrcodeScanner(
-    "reader",
-    {
-        fps: 30, // Tingkatkan frame per detik agar bisa menangkap momen tidak goyang
-        useBarCodeDetectorIfSupported: true
+function initScanner(mode) {
+    if (html5QrcodeScanner) {
+        html5QrcodeScanner.clear().then(() => {
+            startScanner(mode);
+        }).catch(err => console.error(err));
+    } else {
+        startScanner(mode);
     }
-);
-html5QrcodeScanner.render(onScanSuccess);
+}
+
+function startScanner(mode) {
+    let formats = [];
+    if (mode === 'qr') {
+        formats = [0]; // 0 = QR_CODE in Html5QrcodeSupportedFormats enum
+    } else if (mode === 'barcode') {
+        formats = [3, 5, 9]; // CODE_39, CODE_128, EAN_13
+    }
+
+    html5QrcodeScanner = new Html5QrcodeScanner(
+        "reader",
+        {
+            fps: 30,
+            useBarCodeDetectorIfSupported: true,
+            formatsToSupport: formats
+        }
+    );
+    html5QrcodeScanner.render(onScanSuccess);
+}
+
+function setMode(mode) {
+    currentMode = mode;
+    
+    let btnQR = document.getElementById('btnModeQR');
+    let btnBarcode = document.getElementById('btnModeBarcode');
+    
+    if (mode === 'qr') {
+        btnQR.className = 'btn btn-primary';
+        btnQR.style.background = '#4f46e5';
+        btnQR.style.color = '#fff';
+        btnQR.style.border = '1px solid transparent';
+        
+        btnBarcode.className = 'btn btn-secondary';
+        btnBarcode.style.background = '#f1f5f9';
+        btnBarcode.style.color = '#64748b';
+        btnBarcode.style.border = '1px solid #e2e8f0';
+    } else {
+        btnBarcode.className = 'btn btn-primary';
+        btnBarcode.style.background = '#4f46e5';
+        btnBarcode.style.color = '#fff';
+        btnBarcode.style.border = '1px solid transparent';
+        
+        btnQR.className = 'btn btn-secondary';
+        btnQR.style.background = '#f1f5f9';
+        btnQR.style.color = '#64748b';
+        btnQR.style.border = '1px solid #e2e8f0';
+    }
+
+    initScanner(mode);
+}
+
+// Init default mode on load
+setMode('qr');
 
 // KONTROL CAHAYA DIHAPUS SESUAI PERMINTAAN KARENA MENGGANGGU FOKUS KAMERA
 

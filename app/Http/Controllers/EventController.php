@@ -84,4 +84,46 @@ class EventController extends Controller
 
         return redirect('/admin/event');
     }
+
+    public function peserta($id)
+    {
+        $event = Event::findOrFail($id);
+        $mahasiswas = \App\Models\Mahasiswa::all();
+        
+        // Get array of registered NIMs for this event
+        $registeredNims = \Illuminate\Support\Facades\DB::table('event_mahasiswa')
+            ->where('event_id', $id)
+            ->pluck('nim')
+            ->toArray();
+
+        return view('admin.event.peserta', compact('event', 'mahasiswas', 'registeredNims'));
+    }
+
+    public function updatePeserta(Request $request, $id)
+    {
+        $event = Event::findOrFail($id);
+        
+        // nims is an array of checked NIMs from the form
+        $nims = $request->input('nims', []);
+
+        // Delete all existing participants for this event
+        \Illuminate\Support\Facades\DB::table('event_mahasiswa')->where('event_id', $id)->delete();
+
+        // Insert new ones
+        $insertData = [];
+        foreach ($nims as $nim) {
+            $insertData[] = [
+                'event_id' => $id,
+                'nim' => $nim,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+
+        if (count($insertData) > 0) {
+            \Illuminate\Support\Facades\DB::table('event_mahasiswa')->insert($insertData);
+        }
+
+        return redirect('/admin/event')->with('success', 'Daftar peserta event berhasil diupdate!');
+    }
 }
