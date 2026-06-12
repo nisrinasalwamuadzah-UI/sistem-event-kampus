@@ -108,7 +108,6 @@ let html5QrcodeScanner = new Html5QrcodeScanner(
     "reader",
     {
         fps: 30, // Tingkatkan frame per detik agar bisa menangkap momen tidak goyang
-        qrbox: { width: 250, height: 250 }, // Kembalikan ke ukuran standar 250
         useBarCodeDetectorIfSupported: true
     }
 );

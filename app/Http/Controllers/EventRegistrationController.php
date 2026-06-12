@@ -63,7 +63,7 @@ class EventRegistrationController extends Controller
         // karena SVG adalah elemen HTML native (path/rect), bukan file gambar external.
         $qr_svg = \SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')
             ->size(220)
-            ->errorCorrection('H')
+            ->errorCorrection('M')
             ->margin(1)
             ->generate($ticket_nim);
 

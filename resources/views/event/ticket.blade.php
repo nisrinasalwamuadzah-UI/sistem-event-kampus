@@ -320,12 +320,9 @@
                 <div class="divider-line right"></div>
             </div>
 
-            {{-- QR Code dengan Logo di tengah --}}
+            {{-- QR Code --}}
             <div class="qr-container" style="position: relative;">
                 {!! $qr_svg !!}
-                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 4px; border-radius: 8px;">
-                    <img src="{{ asset('images/logo.png') }}" alt="Logo" style="width: 44px; height: 44px; object-fit: contain;">
-                </div>
 
                 {{-- Overlay Jika Sudah Digunakan (Scan Mode = Hidden so it doesn't block QR) --}}
                 @if($kehadiran)
