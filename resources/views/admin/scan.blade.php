@@ -44,7 +44,12 @@
         @endif
 
         <!-- QR SCANNER -->
-        <div id="reader" style="width: 100%; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; margin-bottom: 24px;"></div>
+        <div id="reader" style="width: 100%; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; margin-bottom: 16px;"></div>
+
+        <!-- CAMERA HARDWARE CONTROLS (Injected via JS) -->
+        <div id="camera-controls-container" style="background:#f8fafc; padding:16px; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:24px;">
+            <p style="font-size: 13px; color: #64748b; margin: 0; text-align: center;"><i class="ph-bold ph-spinner ph-spin"></i> Mendeteksi fitur WebCam...</p>
+        </div>
 
         <!-- HIDDEN DIV FOR FILE SCANNING -->
         <div id="hidden-reader" style="position: absolute; top: -9999px; left: -9999px; visibility: hidden;"></div>
@@ -113,6 +118,87 @@ let html5QrcodeScanner = new Html5QrcodeScanner(
     }
 );
 html5QrcodeScanner.render(onScanSuccess);
+
+// LOGIKA KONTROL CAHAYA KAMERA (HARDWARE WEBRTC)
+let currentTrack = null;
+setInterval(() => {
+    const video = document.querySelector('#reader video');
+    if (video && video.srcObject) {
+        const track = video.srcObject.getVideoTracks()[0];
+        if (track && track !== currentTrack) {
+            currentTrack = track;
+            buildCameraControls(track);
+        }
+    }
+}, 1000);
+
+function buildCameraControls(track) {
+    const caps = track.getCapabilities ? track.getCapabilities() : {};
+    const settings = track.getSettings ? track.getSettings() : {};
+    const container = document.getElementById('camera-controls-container');
+    
+    let hasControls = false;
+    let html = '<h4 style="font-size: 14px; font-weight: 600; margin-bottom: 12px; color: #0f172a;"><i class="ph-bold ph-sliders"></i> Pengaturan Cahaya WebCam</h4>';
+
+    const createSlider = (name, label) => {
+        if (!caps[name]) return;
+        hasControls = true;
+        const cap = caps[name];
+        const val = settings[name] || cap.min;
+        html += `
+            <div style="margin-bottom: 10px;">
+                <label style="font-size: 12px; color: #475569; display: flex; justify-content: space-between; margin-bottom: 4px;">
+                    <span>${label}</span> <span id="val-${name}" style="font-weight: 600;">${val}</span>
+                </label>
+                <input type="range" id="slider-${name}" min="${cap.min}" max="${cap.max}" step="${cap.step || 1}" value="${val}" style="width: 100%; cursor: pointer;">
+            </div>
+        `;
+    };
+
+    createSlider('brightness', 'Kecerahan Layar (Brightness)');
+    createSlider('contrast', 'Kontras Warna (Contrast)');
+    createSlider('exposureCompensation', 'Kompensasi Cahaya (Exposure)');
+
+    if (caps.torch) {
+        hasControls = true;
+        html += `<button type="button" id="btn-torch" style="margin-top: 10px; width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #cbd5e1; background: transparent; cursor: pointer; font-size: 13px;"><i class="ph-bold ph-flashlight"></i> Nyalakan Senter Flash</button>`;
+    }
+
+    if (!hasControls) {
+        container.innerHTML = '<p style="font-size: 13px; color: #ef4444; margin: 0; text-align: center;"><i class="ph-bold ph-warning-circle"></i> WebCam laptop ini dikunci sistem (tidak punya pengatur cahaya manual). Mintalah mahasiswa untuk menyesuaikan Brightness HP-nya.</p>';
+        return;
+    }
+
+    container.innerHTML = html;
+
+    // Attach Event Listeners
+    ['brightness', 'contrast', 'exposureCompensation'].forEach(name => {
+        if (caps[name]) {
+            document.getElementById(`slider-${name}`).addEventListener('input', (e) => {
+                const val = parseFloat(e.target.value);
+                document.getElementById(`val-${name}`).innerText = val;
+                
+                // Construct WebRTC advanced constraints payload
+                const constraintObj = {};
+                constraintObj[name] = val;
+                
+                track.applyConstraints({ advanced: [constraintObj] }).catch(err => console.log('Hardware constraint rejected:', err));
+            });
+        }
+    });
+
+    if (caps.torch) {
+        let torchOn = settings.torch || false;
+        const btn = document.getElementById('btn-torch');
+        btn.addEventListener('click', () => {
+            torchOn = !torchOn;
+            track.applyConstraints({ advanced: [{ torch: torchOn }] });
+            btn.style.background = torchOn ? '#4f46e5' : 'transparent';
+            btn.style.color = torchOn ? '#fff' : '#0f172a';
+            btn.style.borderColor = torchOn ? '#4f46e5' : '#cbd5e1';
+        });
+    }
+}
 
 // LOGIKA UPLOAD GAMBAR
 document.getElementById('qr-input-file').addEventListener('change', function(e) {
