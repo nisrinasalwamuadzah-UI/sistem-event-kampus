@@ -106,3 +106,16 @@ jobs:
             
             # Deploy stack (Swarm akan otomatis membaca environment variables di atas)
             docker stack deploy -c docker-compose.yml sistem-event
+            
+            # Tunggu beberapa saat agar container baru naik
+            echo "Waiting for containers to start..."
+            sleep 15
+            
+            # Cari container app yang berjalan dan paksa jalankan migrasi database
+            CONTAINER_ID=$(docker ps -q -f name=sistem-event_app | head -n 1)
+            if [ ! -z "$CONTAINER_ID" ]; then
+                echo "Running migrations on container $CONTAINER_ID..."
+                docker exec $CONTAINER_ID php artisan migrate --force
+            else
+                echo "Warning: Could not find running app container to run migrations."
+            fi
