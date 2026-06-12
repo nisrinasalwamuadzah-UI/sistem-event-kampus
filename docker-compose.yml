@@ -22,6 +22,9 @@ services:
       - DB_USERNAME=${DB_USERNAME:-root}
       - DB_PASSWORD=${PROD_DB_PASSWORD}
       
+      # Auto-run Migrations on Container Start (ServerSideUp PHP)
+      - AUTORUN_LARAVEL_MIGRATION=true
+      
       # Optimization
       - CACHE_STORE=file
       - QUEUE_CONNECTION=sync
