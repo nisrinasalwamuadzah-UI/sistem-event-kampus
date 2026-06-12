@@ -267,7 +267,8 @@
         body.scan-mode .divider,
         body.scan-mode .attendee-section,
         body.scan-mode .ticket-tear,
-        body.scan-mode .back-link {
+        body.scan-mode .back-link,
+        body.scan-mode .used-badge {
             display: none !important;
         }
         body.scan-mode #ticket-card {
@@ -319,16 +320,35 @@
                 <div class="divider-line right"></div>
             </div>
 
-            {{-- QR Code dengan Logo di tengah (Overlay HTML CSS karena format SVG tidak mendukung merge image internal) --}}
-            <div class="qr-container">
-                <div style="position: relative; display: inline-block; width: 220px; height: 220px;">
-                    {!! $qr_svg !!}
-                    {{-- Logo ditengah QR Code. Ukuran 44px (20% dari 220px), posisi tengah (220-44)/2 = 88px --}}
-                    <div style="position: absolute; top: 88px; left: 88px; width: 44px; height: 44px; background: white; display: flex; align-items: center; justify-content: center; border-radius: 6px;">
-                        <img src="/images/logo.png" style="max-width: 36px; max-height: 36px; object-fit: contain;" alt="Center Logo">
-                    </div>
+            {{-- QR Code dengan Logo di tengah --}}
+            <div class="qr-container" style="position: relative;">
+                {!! $qr_svg !!}
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 4px; border-radius: 8px;">
+                    <img src="{{ asset('images/logo.png') }}" alt="Logo" style="width: 44px; height: 44px; object-fit: contain;">
                 </div>
+
+                {{-- Overlay Jika Sudah Digunakan (Scan Mode = Hidden so it doesn't block QR) --}}
+                @if($kehadiran)
+                    <div class="used-badge" style="position: absolute; inset: 0; background: rgba(255, 255, 255, 0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 16px; backdrop-filter: blur(2px); z-index: 10;">
+                        <i class="ph-fill ph-check-circle" style="font-size: 64px; color: #059669; margin-bottom: 8px;"></i>
+                        <span style="font-weight: 800; color: #059669; font-size: 18px; text-transform: uppercase; letter-spacing: 1px;">Telah Digunakan</span>
+                        <span style="font-size: 12px; color: #334155; margin-top: 4px; font-weight: 600; text-align: center; background: #fff; padding: 4px 10px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                            {{ $kehadiran->waktu_scan->setTimezone('Asia/Jakarta')->format('d M Y, H:i') }} WIB
+                        </span>
+                    </div>
+                @endif
             </div>
+
+            {{-- Status Kehadiran Teks Bawah --}}
+            @if($kehadiran)
+                <div style="margin-top: -10px; margin-bottom: 20px; background: #ecfdf5; color: #059669; border: 1px solid #10b981; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    <i class="ph-bold ph-shield-check"></i> Tiket Valid & Sudah Di-scan
+                </div>
+            @else
+                <div style="margin-top: -10px; margin-bottom: 20px; background: #fffbeb; color: #d97706; border: 1px solid #f59e0b; padding: 10px; border-radius: 10px; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                    <i class="ph-bold ph-warning-circle"></i> Belum Digunakan
+                </div>
+            @endif
 
             {{-- Info Peserta --}}
             <div class="attendee-section">

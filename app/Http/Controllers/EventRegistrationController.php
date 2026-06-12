@@ -67,6 +67,9 @@ class EventRegistrationController extends Controller
             ->margin(1)
             ->generate($ticket_nim);
 
-        return view('event.ticket', compact('event', 'ticket_nim', 'ticket_nama', 'qr_svg'));
+        // Cek apakah tiket sudah pernah di-scan (hadir)
+        $kehadiran = \App\Models\Kehadiran::where('event_id', $event->id)->where('nim', $ticket_nim)->first();
+
+        return view('event.ticket', compact('event', 'ticket_nim', 'ticket_nama', 'qr_svg', 'kehadiran'));
     }
 }
