@@ -250,6 +250,47 @@
             pointer-events: none;
             z-index: 0;
         }
+
+        /* Mode Scan Khusus WebCam */
+        body.scan-mode {
+            background: #000000 !important;
+        }
+        body.scan-mode .page-wrapper {
+            max-width: 100%;
+        }
+        body.scan-mode .ticket-wrapper {
+            background: transparent;
+            box-shadow: none;
+        }
+        body.scan-mode .ticket-header,
+        body.scan-mode .logo-badge,
+        body.scan-mode .divider,
+        body.scan-mode .attendee-section,
+        body.scan-mode .ticket-tear,
+        body.scan-mode .back-link {
+            display: none !important;
+        }
+        body.scan-mode #ticket-card {
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+        }
+        body.scan-mode .qr-container {
+            transform: scale(1.3);
+            border: none;
+            box-shadow: 0 0 50px rgba(255,255,255,0.2);
+            margin: 0;
+        }
+        body.scan-mode .scan-instruction {
+            display: block !important;
+            color: white;
+            margin-top: 50px;
+            font-size: 14px;
+            opacity: 0.8;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -296,16 +337,24 @@
                 <div class="mhs-nim">{{ $ticket_nim }}</div>
             </div>
 
+            {{-- Pesan bantuan untuk scan --}}
+            <div class="scan-instruction" style="display: none;">
+                <p>Naikkan *Brightness* HP ke maksimal.<br>Dekatkan QR Code ini ke WebCam.</p>
+            </div>
+
         </div>
         {{-- ===== AKHIR AREA DOWNLOAD ===== --}}
 
         {{-- Garis putus tiket --}}
         <div class="ticket-tear"></div>
 
-        {{-- Tombol Download --}}
+        {{-- Tombol Action --}}
         <div class="action-section">
             <button onclick="downloadTicket()" id="download-btn">
                 <i class="ph-bold ph-download-simple"></i> Download Tiket
+            </button>
+            <button onclick="toggleScanMode()" id="scan-btn" style="background: #1e293b; margin-top: 10px;">
+                <i class="ph-bold ph-scan"></i> Mode Scan WebCam (Anti Silau)
             </button>
         </div>
     </div>
@@ -316,6 +365,18 @@
 </div>
 
 <script>
+function toggleScanMode() {
+    const isScanMode = document.body.classList.toggle('scan-mode');
+    const btn = document.getElementById('scan-btn');
+    if (isScanMode) {
+        btn.innerHTML = '<i class="ph-bold ph-x"></i> Keluar Mode Scan';
+        btn.style.background = '#dc2626';
+    } else {
+        btn.innerHTML = '<i class="ph-bold ph-scan"></i> Mode Scan WebCam (Anti Silau)';
+        btn.style.background = '#1e293b';
+    }
+}
+
 function downloadTicket() {
     const btn = document.getElementById('download-btn');
     btn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> Memproses...';
