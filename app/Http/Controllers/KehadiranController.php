@@ -107,7 +107,7 @@ class KehadiranController extends Controller
                     $k->nama,
                     $k->jurusan,
                     $k->semester,
-                    \Carbon\Carbon::parse($k->waktu_scan)->format('d-m-Y H:i:s'),
+                    $k->waktu_scan->setTimezone('Asia/Jakarta')->format('d-m-Y H:i:s') . ' WIB',
                     'Hadir'
                 ]);
             }

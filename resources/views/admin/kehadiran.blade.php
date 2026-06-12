@@ -33,7 +33,7 @@
                     <td><span class="badge" style="background: #eef2ff; color: #4f46e5;">{{ $item->semester }}</span></td>
                     <td style="color: #64748b; font-size: 13px;">
                         <i class="ph-bold ph-clock" style="margin-right: 4px; vertical-align: middle;"></i>
-                        {{ \Carbon\Carbon::parse($item->waktu_scan)->format('d M Y, H:i') }}
+                        {{ $item->waktu_scan->setTimezone('Asia/Jakarta')->format('d M Y, H:i') }} WIB
                     </td>
                 </tr>
                 @empty

@@ -18,6 +18,10 @@ class Kehadiran extends Model
         'waktu_scan'
     ];
 
+    protected $casts = [
+        'waktu_scan' => 'datetime',
+    ];
+
     public function event()
     {
         return $this->belongsTo(Event::class);
