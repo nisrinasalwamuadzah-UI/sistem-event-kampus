@@ -112,22 +112,31 @@ function onScanSuccess(decodedText, decodedResult) {
 let html5QrcodeScanner = new Html5QrcodeScanner(
     "reader",
     {
-        fps: 10,
-        qrbox: { width: 250, height: 250 },
-        useBarCodeDetectorIfSupported: true
+        fps: 30, // Tingkatkan frame per detik agar bisa menangkap momen tidak goyang
+        qrbox: { width: 220, height: 220 }, // Sesuaikan dengan ukuran QR kita
+        useBarCodeDetectorIfSupported: true,
+        formatsToSupport: [ Html5QrcodeSupportedFormats.QR_CODE ] // Kunci HANYA untuk QR Code agar mesin bekerja 3x lipat lebih cepat dan akurat
     }
 );
 html5QrcodeScanner.render(onScanSuccess);
 
-// LOGIKA KONTROL CAHAYA KAMERA (HARDWARE WEBRTC)
+// LOGIKA KONTROL CAHAYA KAMERA (HARDWARE WEBRTC & CSS FILTER)
 let currentTrack = null;
 setInterval(() => {
     const video = document.querySelector('#reader video');
-    if (video && video.srcObject) {
-        const track = video.srcObject.getVideoTracks()[0];
-        if (track && track !== currentTrack) {
-            currentTrack = track;
-            buildCameraControls(track);
+    if (video) {
+        // Trik Visual: Ubah tampilan kamera menjadi Hitam Putih & High Contrast
+        // Ini membantu Admin menempatkan QR dengan posisi kontras terbaik
+        if (!video.style.filter.includes('grayscale')) {
+            video.style.filter = "grayscale(100%) contrast(150%)";
+        }
+        
+        if (video.srcObject) {
+            const track = video.srcObject.getVideoTracks()[0];
+            if (track && track !== currentTrack) {
+                currentTrack = track;
+                buildCameraControls(track);
+            }
         }
     }
 }, 1000);
