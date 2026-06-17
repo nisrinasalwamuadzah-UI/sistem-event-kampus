@@ -157,7 +157,9 @@
 <div class="wrapper">
     <!-- LEFT -->
     <div class="left">
-        <div class="logo"></div>
+        <div class="logo">
+            <img src="{{ asset('images/logo.png') }}" alt="Logo Kampus" style="width: 100%; height: 100%; object-fit: contain; border-radius: 12px; padding: 5px;">
+        </div>
         <h1>Sistem Kehadiran Event Kampus</h1>
         <p>Platform resmi untuk monitoring kehadiran kegiatan mahasiswa berbasis digital yang terintegrasi dengan sistem akademik kampus.</p>
     </div>
