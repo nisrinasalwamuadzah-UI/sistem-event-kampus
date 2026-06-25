@@ -228,6 +228,7 @@ function startCamera() {
         blurTip.innerHTML = '💡 <b>Tips Barcode:</b> Jauhkan sedikit Barcode KTM (sekitar 15-25cm) dari kamera agar gambar fokus & tajam (tidak blur).';
     }
     
+    // Konfigurasi pertama: Meminta HD ideal tanpa min/max dan tanpa focusMode (mencegah hang pada driver USB Camera)
     html5QrCode.start(
         currentCameraId,
         {
@@ -237,9 +238,8 @@ function startCamera() {
             useBarCodeDetectorIfSupported: true,
             videoConstraints: {
                 deviceId: { exact: currentCameraId },
-                width: { min: 640, ideal: 1280, max: 1920 },
-                height: { min: 480, ideal: 720, max: 1080 },
-                advanced: [{ focusMode: "continuous" }]
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
             }
         },
         onScanSuccess,
@@ -253,9 +253,33 @@ function startCamera() {
         document.getElementById('cameraSelect').disabled = true;
         eventSelect.disabled = true; // Lock event selection while scanning
     }).catch(err => {
-        console.error("Error starting camera: ", err);
-        alert("Gagal memulai kamera: " + err);
-        document.getElementById('reader-container').style.display = 'none';
+        console.warn("Mencoba fallback konfigurasi dasar karena error: ", err);
+        
+        // FALLBACK RETRY: Jika USB Camera menolak resolusi 1280x720, otomatis coba jalankan dengan resolusi bawaan pabrik kamera
+        html5QrCode.start(
+            currentCameraId,
+            {
+                fps: 15,
+                qrbox: { width: boxWidth, height: boxHeight },
+                formatsToSupport: formats,
+                useBarCodeDetectorIfSupported: true,
+                videoConstraints: {
+                    deviceId: { exact: currentCameraId }
+                }
+            },
+            onScanSuccess,
+            (errorMessage) => { /* Abaikan error background */ }
+        ).then(() => {
+            isScanning = true;
+            document.getElementById('btnStartScan').style.display = 'none';
+            document.getElementById('btnStopScan').style.display = 'inline-flex';
+            document.getElementById('cameraSelect').disabled = true;
+            eventSelect.disabled = true;
+        }).catch(err2 => {
+            console.error("Error starting camera fallback: ", err2);
+            alert("⚠️ Gagal memulai kamera USB.\n\nTips Solusi Cepat:\n1. Pastikan kamera USB tidak sedang dipakai oleh aplikasi lain (Zoom / Google Meet / OBS / Camera Windows).\n2. Cabut kabel USB Camera Anda, lalu colokkan kembali ke port USB laptop.\n3. Rincian Error: " + err2);
+            document.getElementById('reader-container').style.display = 'none';
+        });
     });
 }
 
