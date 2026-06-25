@@ -72,11 +72,17 @@
 
             <!-- KONTROL PEMILIHAN KAMERA -->
             <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; margin-bottom: 16px;">
-                <div class="form-group" style="margin-bottom: 16px;">
-                    <label style="font-size: 14px; font-weight: 600; color: #334155; display: block; margin-bottom: 8px;"><i class="ph-bold ph-video-camera"></i> 2. Pilih Kamera Perangkat</label>
+                <div class="form-group" style="margin-bottom: 8px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                        <label style="font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 0;"><i class="ph-bold ph-video-camera"></i> 2. Pilih Kamera Perangkat</label>
+                        <button type="button" id="btnRefreshCamera" onclick="refreshCameraList()" style="background: none; border: 1px solid #cbd5e1; border-radius: 8px; padding: 5px 10px; font-size: 12px; color: #4f46e5; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; font-weight: 600;">
+                            <i class="ph-bold ph-arrows-clockwise"></i> Refresh Kamera
+                        </button>
+                    </div>
                     <select id="cameraSelect" class="form-control" style="width: 100%; padding: 10px 16px; border-radius: 12px; cursor: pointer; background: white; border: 1px solid #cbd5e1;">
-                        <option value="">[ Mencari kamera... ]</option>
+                        <option value="">[ Meminta izin kamera... ]</option>
                     </select>
+                    <div id="cameraStatus" style="font-size: 12px; color: #64748b; margin-top: 6px; display: none;"></div>
                 </div>
                 <div style="display: flex; gap: 8px;">
                     <button type="button" id="btnStartScan" onclick="startCamera()" class="btn btn-primary" style="flex: 1; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
@@ -137,37 +143,99 @@ let currentMode = 'qr';
 let currentCameraId = null;
 let isScanning = false;
 
+// ============================================================
+// FASE 1: Saat halaman dibuka, minta izin kamera terlebih
+// dahulu via getUserMedia() sebelum memanggil getCameras().
+// Ini adalah SATU-SATUNYA cara agar Chrome mengungkap SEMUA
+// perangkat kamera (termasuk USB Camera eksternal) secara penuh.
+// ============================================================
 document.addEventListener("DOMContentLoaded", function() {
     html5QrCode = new Html5Qrcode("reader");
+    refreshCameraList();
+});
 
-    // Dapatkan daftar kamera
-    Html5Qrcode.getCameras().then(devices => {
-        const cameraSelect = document.getElementById('cameraSelect');
-        if (devices && devices.length) {
+function refreshCameraList() {
+    const cameraSelect = document.getElementById('cameraSelect');
+    const statusDiv = document.getElementById('cameraStatus');
+    const refreshBtn = document.getElementById('btnRefreshCamera');
+
+    cameraSelect.innerHTML = '<option value="">[ Meminta izin & mendeteksi kamera... ]</option>';
+    if (statusDiv) { statusDiv.style.display = 'none'; }
+    if (refreshBtn) { refreshBtn.disabled = true; refreshBtn.style.opacity = '0.6'; }
+
+    // FASE 1: Minta izin kamera ke browser dulu
+    // Ini memicu dialog "Izinkan kamera?" dan wajib dilakukan
+    // agar enumerateDevices() mengembalikan daftar LENGKAP.
+    navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+        .then(function(tempStream) {
+            // Izin diberikan! Langsung matikan stream sementara ini —
+            // kita tidak butuh videonya, hanya izinnya.
+            tempStream.getTracks().forEach(track => track.stop());
+
+            // FASE 2: Setelah izin ada, enumerate semua kamera.
+            // Sekarang Chrome akan mengungkap SEMUA kamera termasuk USB.
+            return Html5Qrcode.getCameras();
+        })
+        .then(function(devices) {
+            if (refreshBtn) { refreshBtn.disabled = false; refreshBtn.style.opacity = '1'; }
+
+            if (!devices || devices.length === 0) {
+                cameraSelect.innerHTML = '<option value="">Tidak ada kamera terdeteksi</option>';
+                if (statusDiv) {
+                    statusDiv.innerHTML = '⚠️ Tidak ada kamera ditemukan. Pastikan kamera USB sudah terpasang dengan benar.';
+                    statusDiv.style.color = '#dc2626';
+                    statusDiv.style.display = 'block';
+                }
+                return;
+            }
+
+            // Isi dropdown dengan SEMUA kamera yang ditemukan
             cameraSelect.innerHTML = '';
-            devices.forEach(device => {
+            devices.forEach(function(device) {
                 const option = document.createElement('option');
                 option.value = device.id;
-                option.text = device.label || `Kamera ${device.id}`;
+                option.text = device.label || ('Kamera ' + device.id.substring(0, 8));
                 cameraSelect.appendChild(option);
             });
+
+            // Set kamera aktif ke pilihan pertama di dropdown
             currentCameraId = devices[0].id;
-            
-            // Event listener saat kamera diganti di dropdown
-            cameraSelect.addEventListener('change', function(e) {
-                currentCameraId = e.target.value;
+
+            // Tampilkan status
+            if (statusDiv) {
+                statusDiv.innerHTML = '✅ ' + devices.length + ' kamera terdeteksi. Pilih kamera yang ingin digunakan.';
+                statusDiv.style.color = '#059669';
+                statusDiv.style.display = 'block';
+            }
+
+            // Event listener: sinkronisasi saat user ganti pilihan kamera
+            cameraSelect.onchange = function() {
+                currentCameraId = cameraSelect.value;
                 if (isScanning) {
                     stopCamera().then(() => startCamera());
                 }
-            });
-        } else {
-            cameraSelect.innerHTML = '<option value="">Tidak ada kamera terdeteksi</option>';
-        }
-    }).catch(err => {
-        console.error("Error getting cameras: ", err);
-        document.getElementById('cameraSelect').innerHTML = '<option value="">Akses kamera ditolak / tidak tersedia</option>';
-    });
-});
+            };
+        })
+        .catch(function(err) {
+            if (refreshBtn) { refreshBtn.disabled = false; refreshBtn.style.opacity = '1'; }
+            console.error('Gagal mendapatkan izin kamera atau mendeteksi perangkat: ', err);
+
+            let pesanError = 'Akses kamera ditolak.';
+            if (err.name === 'NotAllowedError') {
+                pesanError = '🔒 Izin kamera ditolak. Klik ikon kunci (🔒) di address bar browser Anda, lalu izinkan akses kamera.';
+            } else if (err.name === 'NotFoundError') {
+                pesanError = '🔌 Tidak ada kamera yang ditemukan. Pastikan kamera USB sudah dicolokkan.';
+            }
+
+            cameraSelect.innerHTML = '<option value="">Kamera tidak dapat diakses</option>';
+            if (statusDiv) {
+                statusDiv.innerHTML = pesanError;
+                statusDiv.style.color = '#dc2626';
+                statusDiv.style.display = 'block';
+            }
+        });
+}
+
 
 function onScanSuccess(decodedText, decodedResult) {
     if (isScanning && html5QrCode) {
