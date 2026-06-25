@@ -304,7 +304,7 @@ function startCamera() {
     html5QrCode.start(
         currentCameraId,
         {
-            fps: 10,
+            fps: 15,
             qrbox: { width: Math.round(boxWidth), height: Math.round(boxHeight) },
             useBarCodeDetectorIfSupported: true
         },
