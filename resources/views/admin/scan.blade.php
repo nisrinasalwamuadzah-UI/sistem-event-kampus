@@ -92,7 +92,7 @@
             <div id="reader-container" style="display: none; width: 100%; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; margin-bottom: 16px; background: black;">
                 <div id="reader" style="width: 100%;"></div>
                 <div id="blur-tip" style="background: #1e293b; color: #f8fafc; padding: 12px 16px; font-size: 13px; text-align: center; border-top: 1px solid #334155; display: none;">
-                    💡 <b>Tips Barcode:</b> Jauhkan sedikit KTM (sekitar 15-25cm) dari kamera agar gambar fokus & tajam (tidak blur).
+                    💡 <b>Tips QR Code:</b> Jauhkan sedikit QR Code (sekitar 15-25cm) dari kamera agar gambar fokus & tajam (tidak blur).
                 </div>
             </div>
 
@@ -214,7 +214,13 @@ function startCamera() {
     let boxHeight = currentMode === 'qr' ? 250 : 120;
     
     document.getElementById('reader-container').style.display = 'block';
-    document.getElementById('blur-tip').style.display = currentMode === 'qr' ? 'none' : 'block';
+    let blurTip = document.getElementById('blur-tip');
+    blurTip.style.display = 'block';
+    if (currentMode === 'qr') {
+        blurTip.innerHTML = '💡 <b>Tips QR Code:</b> Jauhkan sedikit QR Code (sekitar 15-25cm) dari kamera agar gambar fokus & tajam (tidak blur).';
+    } else {
+        blurTip.innerHTML = '💡 <b>Tips Barcode:</b> Jauhkan sedikit Barcode KTM (sekitar 15-25cm) dari kamera agar gambar fokus & tajam (tidak blur).';
+    }
     
     html5QrCode.start(
         currentCameraId,
@@ -288,7 +294,7 @@ function setMode(mode) {
         btnBarcode.style.background = '#f1f5f9';
         btnBarcode.style.color = '#64748b';
         btnBarcode.style.border = '1px solid #e2e8f0';
-        if (blurTip) blurTip.style.display = 'none';
+        if (blurTip) blurTip.innerHTML = '💡 <b>Tips QR Code:</b> Jauhkan sedikit QR Code (sekitar 15-25cm) dari kamera agar gambar fokus & tajam (tidak blur).';
     } else {
         btnBarcode.className = 'btn btn-primary';
         btnBarcode.style.background = '#4f46e5';
@@ -299,7 +305,7 @@ function setMode(mode) {
         btnQR.style.background = '#f1f5f9';
         btnQR.style.color = '#64748b';
         btnQR.style.border = '1px solid #e2e8f0';
-        if (blurTip) blurTip.style.display = 'block';
+        if (blurTip) blurTip.innerHTML = '💡 <b>Tips Barcode:</b> Jauhkan sedikit Barcode KTM (sekitar 15-25cm) dari kamera agar gambar fokus & tajam (tidak blur).';
     }
 
     if (isScanning) {
