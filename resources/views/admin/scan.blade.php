@@ -204,6 +204,12 @@ function startCamera() {
         return;
     }
 
+    // Pastikan currentCameraId mengambil value terbaru dari dropdown
+    const cameraSelect = document.getElementById('cameraSelect');
+    if (cameraSelect && cameraSelect.value) {
+        currentCameraId = cameraSelect.value;
+    }
+
     if (!currentCameraId) {
         alert("Pilih kamera terlebih dahulu!");
         return;
@@ -230,6 +236,7 @@ function startCamera() {
             formatsToSupport: formats,
             useBarCodeDetectorIfSupported: true,
             videoConstraints: {
+                deviceId: { exact: currentCameraId },
                 width: { min: 640, ideal: 1280, max: 1920 },
                 height: { min: 480, ideal: 720, max: 1080 },
                 advanced: [{ focusMode: "continuous" }]
