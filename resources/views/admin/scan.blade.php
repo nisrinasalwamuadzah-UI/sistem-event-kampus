@@ -283,11 +283,7 @@ function startCamera() {
         return;
     }
 
-    // Hitung ukuran qrbox secara dinamis berdasarkan lebar kontainer
-    let containerWidth = document.getElementById('reader').offsetWidth || 350;
-    let boxWidth = currentMode === 'qr' ? Math.min(250, containerWidth * 0.85) : Math.min(Math.floor(containerWidth * 0.9), 420);
-    let boxHeight = currentMode === 'qr' ? Math.min(250, containerWidth * 0.85) : 150;
-
+    // Tampilkan container DULU agar offsetWidth bisa dibaca dengan benar
     document.getElementById('reader-container').style.display = 'block';
     let blurTip = document.getElementById('blur-tip');
     blurTip.style.display = 'block';
@@ -297,16 +293,22 @@ function startCamera() {
         blurTip.innerHTML = '💡 <b>Tips Barcode:</b> Posisikan barcode tegak lurus, jarak 30-50cm. Jangan terlalu dekat atau jauh.';
     }
 
+    // Baca lebar SETELAH container visible agar nilai benar
+    let containerWidth = document.getElementById('reader').offsetWidth;
+    // Gunakan nilai fixed yang aman jika belum ter-render (fallback)
+    let boxWidth = currentMode === 'qr' ? 250 : (containerWidth > 100 ? Math.min(Math.floor(containerWidth * 0.9), 420) : 300);
+    let boxHeight = currentMode === 'qr' ? 250 : 150;
+
     // KONFIGURASI BERSIH: Hanya gunakan cameraId sebagai parameter pertama.
-    // JANGAN gunakan videoConstraints — ini bentrok dan menyebabkan blur/error.
-    // JANGAN gunakan formatsToSupport — ini membatasi format dan menyebabkan gagal baca.
-    // Konfigurasi ini identik dengan yang BEKERJA sebelumnya.
+    // Tanpa videoConstraints (menyebabkan blur & error).
+    // Tanpa formatsToSupport (membatasi format & gagal baca).
+    // Tanpa useBarCodeDetectorIfSupported — gunakan ZXing yang jauh lebih robust
+    // untuk kondisi gambar blur/low-light dibanding Chrome BarcodeDetector.
     html5QrCode.start(
         currentCameraId,
         {
             fps: 15,
-            qrbox: { width: Math.round(boxWidth), height: Math.round(boxHeight) },
-            useBarCodeDetectorIfSupported: true
+            qrbox: { width: boxWidth, height: boxHeight }
         },
         onScanSuccess,
         (errorMessage) => {
