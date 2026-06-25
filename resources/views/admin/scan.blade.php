@@ -283,71 +283,47 @@ function startCamera() {
         return;
     }
 
-    let formats = currentMode === 'qr' ? [0] : [3, 5, 9]; // 0 = QR_CODE, 3=CODE_39, 5=CODE_128, 9=EAN_13
-    let boxWidth = currentMode === 'qr' ? 250 : 320;
-    let boxHeight = currentMode === 'qr' ? 250 : 120;
-    
+    // Hitung ukuran qrbox secara dinamis berdasarkan lebar kontainer
+    let containerWidth = document.getElementById('reader').offsetWidth || 350;
+    let boxWidth = currentMode === 'qr' ? Math.min(250, containerWidth * 0.85) : Math.min(Math.floor(containerWidth * 0.9), 420);
+    let boxHeight = currentMode === 'qr' ? Math.min(250, containerWidth * 0.85) : 150;
+
     document.getElementById('reader-container').style.display = 'block';
     let blurTip = document.getElementById('blur-tip');
     blurTip.style.display = 'block';
     if (currentMode === 'qr') {
-        blurTip.innerHTML = '💡 <b>Tips QR Code:</b> Jauhkan sedikit QR Code (sekitar 15-25cm) dari kamera agar gambar fokus & tajam (tidak blur).';
+        blurTip.innerHTML = '💡 <b>Tips QR Code:</b> Posisikan QR Code tegak lurus di depan kamera, jarak 30-50cm. Tangan jangan bergetar.';
     } else {
-        blurTip.innerHTML = '💡 <b>Tips Barcode:</b> Jauhkan sedikit Barcode KTM (sekitar 15-25cm) dari kamera agar gambar fokus & tajam (tidak blur).';
+        blurTip.innerHTML = '💡 <b>Tips Barcode:</b> Posisikan barcode tegak lurus, jarak 30-50cm. Jangan terlalu dekat atau jauh.';
     }
-    
-    // Konfigurasi pertama: Meminta HD ideal tanpa min/max dan tanpa focusMode (mencegah hang pada driver USB Camera)
+
+    // KONFIGURASI BERSIH: Hanya gunakan cameraId sebagai parameter pertama.
+    // JANGAN gunakan videoConstraints — ini bentrok dan menyebabkan blur/error.
+    // JANGAN gunakan formatsToSupport — ini membatasi format dan menyebabkan gagal baca.
+    // Konfigurasi ini identik dengan yang BEKERJA sebelumnya.
     html5QrCode.start(
         currentCameraId,
         {
-            fps: 15,
-            qrbox: { width: boxWidth, height: boxHeight },
-            formatsToSupport: formats,
-            useBarCodeDetectorIfSupported: true,
-            videoConstraints: {
-                deviceId: { exact: currentCameraId },
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-            }
+            fps: 10,
+            qrbox: { width: Math.round(boxWidth), height: Math.round(boxHeight) },
+            useBarCodeDetectorIfSupported: true
         },
         onScanSuccess,
         (errorMessage) => {
-            // Abaikan error background pemindaian normal
+            // Abaikan error background pemindaian normal (bukan error fatal)
         }
     ).then(() => {
         isScanning = true;
         document.getElementById('btnStartScan').style.display = 'none';
         document.getElementById('btnStopScan').style.display = 'inline-flex';
         document.getElementById('cameraSelect').disabled = true;
-        eventSelect.disabled = true; // Lock event selection while scanning
+        eventSelect.disabled = true;
     }).catch(err => {
-        console.warn("Mencoba fallback konfigurasi dasar karena error: ", err);
-        
-        // FALLBACK RETRY: Jika USB Camera menolak resolusi 1280x720, otomatis coba jalankan dengan resolusi bawaan pabrik kamera
-        html5QrCode.start(
-            currentCameraId,
-            {
-                fps: 15,
-                qrbox: { width: boxWidth, height: boxHeight },
-                formatsToSupport: formats,
-                useBarCodeDetectorIfSupported: true,
-                videoConstraints: {
-                    deviceId: { exact: currentCameraId }
-                }
-            },
-            onScanSuccess,
-            (errorMessage) => { /* Abaikan error background */ }
-        ).then(() => {
-            isScanning = true;
-            document.getElementById('btnStartScan').style.display = 'none';
-            document.getElementById('btnStopScan').style.display = 'inline-flex';
-            document.getElementById('cameraSelect').disabled = true;
-            eventSelect.disabled = true;
-        }).catch(err2 => {
-            console.error("Error starting camera fallback: ", err2);
-            alert("⚠️ Gagal memulai kamera USB.\n\nTips Solusi Cepat:\n1. Pastikan kamera USB tidak sedang dipakai oleh aplikasi lain (Zoom / Google Meet / OBS / Camera Windows).\n2. Cabut kabel USB Camera Anda, lalu colokkan kembali ke port USB laptop.\n3. Rincian Error: " + err2);
-            document.getElementById('reader-container').style.display = 'none';
-        });
+        console.error("Error starting camera: ", err);
+        alert("⚠️ Gagal memulai kamera.\n\nTips:\n1. Cabut dan colokkan kembali kamera USB.\n2. Pastikan tidak ada aplikasi lain (Zoom/Meet) yang memakai kamera.\n3. Error: " + err);
+        document.getElementById('reader-container').style.display = 'none';
+        document.getElementById('cameraSelect').disabled = false;
+        eventSelect.disabled = false;
     });
 }
 
