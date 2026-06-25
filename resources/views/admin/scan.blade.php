@@ -53,8 +53,28 @@
             </button>
         </div>
 
+        <!-- KONTROL PEMILIHAN KAMERA -->
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; margin-bottom: 16px;">
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label style="font-size: 14px; font-weight: 600; color: #334155; display: block; margin-bottom: 8px;"><i class="ph-bold ph-video-camera"></i> Pilih Kamera Perangkat</label>
+                <select id="cameraSelect" class="form-control" style="width: 100%; padding: 10px 16px; border-radius: 12px; cursor: pointer; background: white; border: 1px solid #cbd5e1;">
+                    <option value="">[ Mencari kamera... ]</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button type="button" id="btnStartScan" onclick="startCamera()" class="btn btn-primary" style="flex: 1; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+                    <i class="ph-bold ph-play"></i> Mulai Scan
+                </button>
+                <button type="button" id="btnStopScan" onclick="stopCamera()" class="btn btn-secondary" style="flex: 1; padding: 12px; border-radius: 12px; font-size: 14px; font-weight: 600; display: none; align-items: center; justify-content: center; gap: 8px;">
+                    <i class="ph-bold ph-stop"></i> Berhenti Scan
+                </button>
+            </div>
+        </div>
+
         <!-- QR SCANNER -->
-        <div id="reader" style="width: 100%; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; margin-bottom: 16px;"></div>
+        <div id="reader-container" style="display: none; width: 100%; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; margin-bottom: 16px; background: black;">
+            <div id="reader" style="width: 100%;"></div>
+        </div>
 
         <!-- HIDDEN DIV FOR FILE SCANNING -->
         <div id="hidden-reader" style="position: absolute; top: -9999px; left: -9999px; visibility: hidden;"></div>
@@ -106,44 +126,116 @@
 <!-- QR CODE SCRIPT -->
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script>
-let html5QrcodeScanner = null;
+let html5QrCode = null;
 let currentMode = 'qr';
+let currentCameraId = null;
+let isScanning = false;
+
+document.addEventListener("DOMContentLoaded", function() {
+    html5QrCode = new Html5Qrcode("reader");
+
+    // Dapatkan daftar kamera
+    Html5Qrcode.getCameras().then(devices => {
+        const cameraSelect = document.getElementById('cameraSelect');
+        if (devices && devices.length) {
+            cameraSelect.innerHTML = '';
+            devices.forEach(device => {
+                const option = document.createElement('option');
+                option.value = device.id;
+                option.text = device.label || `Kamera ${device.id}`;
+                cameraSelect.appendChild(option);
+            });
+            currentCameraId = devices[0].id;
+            
+            // Event listener saat kamera diganti di dropdown
+            cameraSelect.addEventListener('change', function(e) {
+                currentCameraId = e.target.value;
+                if (isScanning) {
+                    stopCamera().then(() => startCamera());
+                }
+            });
+        } else {
+            cameraSelect.innerHTML = '<option value="">Tidak ada kamera terdeteksi</option>';
+        }
+    }).catch(err => {
+        console.error("Error getting cameras: ", err);
+        document.getElementById('cameraSelect').innerHTML = '<option value="">Akses kamera ditolak / tidak tersedia</option>';
+    });
+});
 
 function onScanSuccess(decodedText, decodedResult) {
-    if (html5QrcodeScanner && html5QrcodeScanner.getState() === Html5QrcodeScannerState.SCANNING) {
-        html5QrcodeScanner.pause();
+    if (isScanning && html5QrCode) {
+        html5QrCode.stop().then(() => {
+            isScanning = false;
+            updateUIStopped();
+            processResult(decodedText);
+        }).catch(err => console.error(err));
+    } else {
+        processResult(decodedText);
     }
+}
+
+function processResult(decodedText) {
     document.getElementById('nim').value = decodedText.trim();
     document.getElementById('scanForm').submit();
 }
 
-function initScanner(mode) {
-    if (html5QrcodeScanner) {
-        html5QrcodeScanner.clear().then(() => {
-            startScanner(mode);
-        }).catch(err => console.error(err));
-    } else {
-        startScanner(mode);
+function startCamera() {
+    if (!currentCameraId) {
+        alert("Pilih kamera terlebih dahulu!");
+        return;
     }
+
+    let formats = currentMode === 'qr' ? [0] : [3, 5, 9]; // 0 = QR_CODE, 3=CODE_39, 5=CODE_128, 9=EAN_13
+    
+    document.getElementById('reader-container').style.display = 'block';
+    
+    html5QrCode.start(
+        currentCameraId,
+        {
+            fps: 15,
+            qrbox: { width: 250, height: 250 },
+            formatsToSupport: formats,
+            useBarCodeDetectorIfSupported: true
+        },
+        onScanSuccess,
+        (errorMessage) => {
+            // Abaikan error background pemindaian normal
+        }
+    ).then(() => {
+        isScanning = true;
+        document.getElementById('btnStartScan').style.display = 'none';
+        document.getElementById('btnStopScan').style.display = 'inline-flex';
+        document.getElementById('cameraSelect').disabled = true;
+    }).catch(err => {
+        console.error("Error starting camera: ", err);
+        alert("Gagal memulai kamera: " + err);
+        document.getElementById('reader-container').style.display = 'none';
+    });
 }
 
-function startScanner(mode) {
-    let formats = [];
-    if (mode === 'qr') {
-        formats = [0]; // 0 = QR_CODE in Html5QrcodeSupportedFormats enum
-    } else if (mode === 'barcode') {
-        formats = [3, 5, 9]; // CODE_39, CODE_128, EAN_13
-    }
-
-    html5QrcodeScanner = new Html5QrcodeScanner(
-        "reader",
-        {
-            fps: 30,
-            useBarCodeDetectorIfSupported: true,
-            formatsToSupport: formats
+function stopCamera() {
+    return new Promise((resolve, reject) => {
+        if (html5QrCode && isScanning) {
+            html5QrCode.stop().then(() => {
+                isScanning = false;
+                updateUIStopped();
+                resolve();
+            }).catch(err => {
+                console.error("Error stopping camera: ", err);
+                reject(err);
+            });
+        } else {
+            resolve();
         }
-    );
-    html5QrcodeScanner.render(onScanSuccess);
+    });
+}
+
+function updateUIStopped() {
+    document.getElementById('btnStartScan').style.display = 'inline-flex';
+    document.getElementById('btnStopScan').style.display = 'none';
+    document.getElementById('reader-container').style.display = 'none';
+    document.getElementById('cameraSelect').disabled = false;
 }
 
 function setMode(mode) {
@@ -174,13 +266,12 @@ function setMode(mode) {
         btnQR.style.border = '1px solid #e2e8f0';
     }
 
-    initScanner(mode);
+    if (isScanning) {
+        stopCamera().then(() => {
+            startCamera();
+        });
+    }
 }
-
-// Init default mode on load
-setMode('qr');
-
-// KONTROL CAHAYA DIHAPUS SESUAI PERMINTAAN KARENA MENGGANGGU FOKUS KAMERA
 
 // LOGIKA UPLOAD GAMBAR
 document.getElementById('qr-input-file').addEventListener('change', function(e) {
@@ -190,10 +281,14 @@ document.getElementById('qr-input-file').addEventListener('change', function(e) 
     const statusDiv = document.getElementById('upload-status');
     statusDiv.style.display = 'none';
 
+    if (isScanning) {
+        stopCamera();
+    }
+
     const fileScanner = new Html5Qrcode("hidden-reader");
     fileScanner.scanFile(imageFile, true)
         .then(decodedText => {
-            onScanSuccess(decodedText, null);
+            processResult(decodedText);
         })
         .catch(err => {
             statusDiv.style.display = 'block';
