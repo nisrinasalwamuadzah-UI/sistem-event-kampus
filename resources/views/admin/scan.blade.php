@@ -122,7 +122,13 @@ document.addEventListener("DOMContentLoaded", () => {
         { 
             fps: 10, // Turunkan ke 10fps agar CPU tidak lag/hang saat memproses gambar
             useBarCodeDetectorIfSupported: false, // WAJIB FALSE: Karena web Anda berjalan di HTTP (Not Secure), API native browser diblokir oleh Chrome. Kita harus memaksa pakai Javascript murni.
-            rememberLastUsedCamera: true // Mengingat kamera USB jika dipilih
+            rememberLastUsedCamera: true, // Mengingat kamera USB jika dipilih
+            // OPTIMASI KAMERA BIASA & CPU:
+            qrbox: 250, // Meringankan beban CPU hingga 80% karena hanya memproses area dalam kotak
+            videoConstraints: {
+                width: { ideal: 640 },
+                height: { ideal: 480 }
+            }
         },
         /* verbose= */ false
     );
