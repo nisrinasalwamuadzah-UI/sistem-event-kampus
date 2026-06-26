@@ -158,9 +158,10 @@ document.addEventListener("DOMContentLoaded", () => {
             fps: 10,
             useBarCodeDetectorIfSupported: true, 
             rememberLastUsedCamera: true,
+            supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA], // MATIKAN FITUR UPLOAD BAWAAN LIBRARY
             formatsToSupport: [ 0, 3, 5 ], // HANYA QR (0), Code 39 (3), Code 128 (5). Menghemat 80% beban CPU!
             videoConstraints: {
-                facingMode: "environment" // Hapus resolusi paksa (1280x720) agar webcam murah tidak pecah/blur akibat digital upscaling
+                facingMode: "environment" // Hapus resolusi paksa agar webcam murah tidak pecah/blur
             }
         },
         /* verbose= */ false
@@ -168,7 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     html5QrcodeScanner.render(
         (decodedText) => processResult(decodedText),
-        () => {} // Abaikan error per frame
+        () => {} // Abaikan error frame (sangat penting agar tidak macet)
     );
 });
 </script>
