@@ -52,16 +52,6 @@
                 </p>
             </div>
 
-            <!-- STEP 3: UPLOAD FOTO (FALLBACK) -->
-            <div style="background: #fffbeb; border: 1px dashed #fcd34d; border-radius: 16px; padding: 20px; margin-bottom: 24px; text-align: center;">
-                <label style="font-size: 14px; font-weight: 600; color: #b45309; margin-bottom: 12px; display: block;">
-                    <i class="ph-bold ph-image"></i> Kamera Sulit Fokus? Upload Foto Saja
-                </label>
-                <input type="file" id="uploadFile" accept="image/*" class="form-control" style="padding: 10px; background: white;">
-                <div id="uploadStatus" style="margin-top: 10px; font-weight: 600; font-size: 13px;"></div>
-                <div id="hidden-reader" style="display: none;"></div>
-            </div>
-
             <!-- NIM RESULT -->
             <div class="form-group">
                 <label>NIM Mahasiswa (terisi otomatis)</label>
@@ -128,31 +118,6 @@ document.addEventListener("DOMContentLoaded", () => {
         (decodedText) => processResult(decodedText),
         () => {} // Abaikan error frame (sangat penting agar tidak macet)
     );
-
-    // FITUR UPLOAD FOTO
-    const uploadInput = document.getElementById('uploadFile');
-    const statusDiv = document.getElementById('uploadStatus');
-
-    uploadInput.addEventListener('change', (e) => {
-        if (e.target.files.length === 0) return;
-        const file = e.target.files[0];
-
-        statusDiv.innerHTML = '<span style="color: #b45309;">⏳ Sedang membaca barcode dari gambar...</span>';
-
-        const fileScanner = new Html5Qrcode("hidden-reader");
-        fileScanner.scanFile(file, false)
-            .then(decodedText => {
-                statusDiv.innerHTML = '<span style="color: #059669;">✅ Berhasil! NIM: ' + decodedText + '</span>';
-                setTimeout(() => processResult(decodedText), 500);
-            })
-            .catch(err => {
-                statusDiv.innerHTML = '<span style="color: #dc2626;">❌ Barcode/QR tidak terdeteksi di foto ini.</span>';
-                uploadInput.value = '';
-            })
-            .finally(() => {
-                fileScanner.clear().catch(()=>{});
-            });
-    });
 });
 </script>
 @endsection
