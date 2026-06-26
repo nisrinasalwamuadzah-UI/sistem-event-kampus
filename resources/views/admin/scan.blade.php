@@ -120,8 +120,8 @@ document.addEventListener("DOMContentLoaded", () => {
     let html5QrcodeScanner = new Html5QrcodeScanner(
         "reader",
         { 
-            fps: 30, // Kembalikan ke 30fps untuk responsivitas maksimal
-            useBarCodeDetectorIfSupported: true, // Gunakan AI bawaan Chrome
+            fps: 10, // Turunkan ke 10fps agar CPU tidak lag/hang saat memproses gambar
+            useBarCodeDetectorIfSupported: false, // WAJIB FALSE: Karena web Anda berjalan di HTTP (Not Secure), API native browser diblokir oleh Chrome. Kita harus memaksa pakai Javascript murni.
             rememberLastUsedCamera: true // Mengingat kamera USB jika dipilih
         },
         /* verbose= */ false
