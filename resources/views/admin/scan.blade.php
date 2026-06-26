@@ -124,7 +124,7 @@ document.addEventListener("DOMContentLoaded", () => {
             useBarCodeDetectorIfSupported: false, // WAJIB FALSE: Karena web Anda berjalan di HTTP (Not Secure), API native browser diblokir oleh Chrome. Kita harus memaksa pakai Javascript murni.
             rememberLastUsedCamera: true, // Mengingat kamera USB jika dipilih
             // OPTIMASI KAMERA BIASA & CPU:
-            qrbox: 250, // Meringankan beban CPU hingga 80% karena hanya memproses area dalam kotak
+            qrbox: { width: 500, height: 150 }, // BENTUK PERSEGI PANJANG (ULTRAWIDE): Agar barcode panjang bisa di-scan dari jarak dekat tanpa terpotong!
             videoConstraints: {
                 width: { ideal: 640 },
                 height: { ideal: 480 }
