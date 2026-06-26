@@ -95,10 +95,21 @@
             </div>
 
             <!-- QR SCANNER -->
-            <div id="reader-container" style="display: none; width: 100%; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; margin-bottom: 16px; background: black;">
-                <div id="reader" style="width: 100%;"></div>
-                <div id="blur-tip" style="background: #1e293b; color: #f8fafc; padding: 12px 16px; font-size: 13px; text-align: center; border-top: 1px solid #334155; display: none;">
-                    💡 <b>Tips QR Code:</b> Jauhkan sedikit QR Code (sekitar 15-25cm) dari kamera agar gambar fokus & tajam (tidak blur).
+            <div id="reader-container" style="display: none; width: 100%; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; margin-bottom: 16px; background: black; position: relative;">
+                
+                <div id="video-wrapper" style="width: 100%; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                    <div id="reader" style="width: 100%; transition: transform 0.2s ease-in-out; transform-origin: center;"></div>
+                </div>
+
+                <!-- Zoom Controls -->
+                <div id="zoom-controls" style="position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); padding: 6px 16px; border-radius: 20px; display: flex; gap: 16px; align-items: center; z-index: 10;">
+                    <button type="button" id="btnZoomOut" style="background:none; border:none; color:white; cursor:pointer; padding:4px;"><i class="ph-bold ph-minus"></i></button>
+                    <span id="zoomLabel" style="color:white; font-size: 13px; font-weight:600; min-width: 40px; text-align:center;">1.0x</span>
+                    <button type="button" id="btnZoomIn" style="background:none; border:none; color:white; cursor:pointer; padding:4px;"><i class="ph-bold ph-plus"></i></button>
+                </div>
+
+                <div id="blur-tip" style="position: relative; z-index: 10; background: #1e293b; color: #f8fafc; padding: 12px 16px; font-size: 13px; text-align: center; border-top: 1px solid #334155; display: none;">
+                    💡 <b>Tips QR Code:</b> Posisikan QR Code tegak lurus di depan kamera, jarak 30-50cm.
                 </div>
             </div>
 
@@ -138,289 +149,288 @@
 <!-- QR CODE SCRIPT -->
 <script src="https://unpkg.com/html5-qrcode"></script>
 <script>
-let html5QrCode = null;
-let currentMode = 'qr';
-let currentCameraId = null;
-let isScanning = false;
+class ScannerApp {
+    constructor() {
+        this.html5QrCode = null;
+        this.currentMode = 'qr';
+        this.currentCameraId = null;
+        this.isScanning = false;
+        this.zoomLevel = 1.0;
+        
+        // DOM Elements
+        this.els = {
+            cameraSelect: document.getElementById('cameraSelect'),
+            statusDiv: document.getElementById('cameraStatus'),
+            refreshBtn: document.getElementById('btnRefreshCamera'),
+            readerContainer: document.getElementById('reader-container'),
+            reader: document.getElementById('reader'),
+            btnStart: document.getElementById('btnStartScan'),
+            btnStop: document.getElementById('btnStopScan'),
+            eventSelect: document.getElementById('event_id'),
+            blurTip: document.getElementById('blur-tip'),
+            btnQR: document.getElementById('btnModeQR'),
+            btnBarcode: document.getElementById('btnModeBarcode'),
+            nimInput: document.getElementById('nim'),
+            scanForm: document.getElementById('scanForm'),
+            uploadInput: document.getElementById('qr-input-file'),
+            uploadStatus: document.getElementById('upload-status'),
+            btnZoomIn: document.getElementById('btnZoomIn'),
+            btnZoomOut: document.getElementById('btnZoomOut'),
+            zoomLabel: document.getElementById('zoomLabel')
+        };
 
-// ============================================================
-// FASE 1: Saat halaman dibuka, minta izin kamera terlebih
-// dahulu via getUserMedia() sebelum memanggil getCameras().
-// Ini adalah SATU-SATUNYA cara agar Chrome mengungkap SEMUA
-// perangkat kamera (termasuk USB Camera eksternal) secara penuh.
-// ============================================================
-document.addEventListener("DOMContentLoaded", function() {
-    html5QrCode = new Html5Qrcode("reader");
-    refreshCameraList();
-});
+        this.init();
+    }
 
-function refreshCameraList() {
-    const cameraSelect = document.getElementById('cameraSelect');
-    const statusDiv = document.getElementById('cameraStatus');
-    const refreshBtn = document.getElementById('btnRefreshCamera');
+    init() {
+        this.html5QrCode = new Html5Qrcode("reader");
+        this.bindEvents();
+        this.refreshCameraList();
+        
+        // Posisikan method setMode ke window agar bisa dipanggil HTML onclick
+        window.setMode = (mode) => this.setMode(mode);
+        window.startCamera = () => this.startCamera();
+        window.stopCamera = () => this.stopCamera();
+        window.refreshCameraList = () => this.refreshCameraList();
+    }
 
-    cameraSelect.innerHTML = '<option value="">[ Meminta izin & mendeteksi kamera... ]</option>';
-    if (statusDiv) { statusDiv.style.display = 'none'; }
-    if (refreshBtn) { refreshBtn.disabled = true; refreshBtn.style.opacity = '0.6'; }
-
-    // FASE 1: Minta izin kamera ke browser dulu
-    // Ini memicu dialog "Izinkan kamera?" dan wajib dilakukan
-    // agar enumerateDevices() mengembalikan daftar LENGKAP.
-    navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-        .then(function(tempStream) {
-            // Izin diberikan! Langsung matikan stream sementara ini —
-            // kita tidak butuh videonya, hanya izinnya.
-            tempStream.getTracks().forEach(track => track.stop());
-
-            // FASE 2: Setelah izin ada, enumerate semua kamera.
-            // Sekarang Chrome akan mengungkap SEMUA kamera termasuk USB.
-            return Html5Qrcode.getCameras();
-        })
-        .then(function(devices) {
-            if (refreshBtn) { refreshBtn.disabled = false; refreshBtn.style.opacity = '1'; }
-
-            if (!devices || devices.length === 0) {
-                cameraSelect.innerHTML = '<option value="">Tidak ada kamera terdeteksi</option>';
-                if (statusDiv) {
-                    statusDiv.innerHTML = '⚠️ Tidak ada kamera ditemukan. Pastikan kamera USB sudah terpasang dengan benar.';
-                    statusDiv.style.color = '#dc2626';
-                    statusDiv.style.display = 'block';
-                }
-                return;
-            }
-
-            // Isi dropdown dengan SEMUA kamera yang ditemukan
-            cameraSelect.innerHTML = '';
-            devices.forEach(function(device) {
-                const option = document.createElement('option');
-                option.value = device.id;
-                option.text = device.label || ('Kamera ' + device.id.substring(0, 8));
-                cameraSelect.appendChild(option);
-            });
-
-            // Set kamera aktif ke pilihan pertama di dropdown
-            currentCameraId = devices[0].id;
-
-            // Tampilkan status
-            if (statusDiv) {
-                statusDiv.innerHTML = '✅ ' + devices.length + ' kamera terdeteksi. Pilih kamera yang ingin digunakan.';
-                statusDiv.style.color = '#059669';
-                statusDiv.style.display = 'block';
-            }
-
-            // Event listener: sinkronisasi saat user ganti pilihan kamera
-            cameraSelect.onchange = function() {
-                currentCameraId = cameraSelect.value;
-                if (isScanning) {
-                    stopCamera().then(() => startCamera());
-                }
-            };
-        })
-        .catch(function(err) {
-            if (refreshBtn) { refreshBtn.disabled = false; refreshBtn.style.opacity = '1'; }
-            console.error('Gagal mendapatkan izin kamera atau mendeteksi perangkat: ', err);
-
-            let pesanError = 'Akses kamera ditolak.';
-            if (err.name === 'NotAllowedError') {
-                pesanError = '🔒 Izin kamera ditolak. Klik ikon kunci (🔒) di address bar browser Anda, lalu izinkan akses kamera.';
-            } else if (err.name === 'NotFoundError') {
-                pesanError = '🔌 Tidak ada kamera yang ditemukan. Pastikan kamera USB sudah dicolokkan.';
-            }
-
-            cameraSelect.innerHTML = '<option value="">Kamera tidak dapat diakses</option>';
-            if (statusDiv) {
-                statusDiv.innerHTML = pesanError;
-                statusDiv.style.color = '#dc2626';
-                statusDiv.style.display = 'block';
+    bindEvents() {
+        this.els.cameraSelect.addEventListener('change', (e) => {
+            this.currentCameraId = e.target.value;
+            if (this.isScanning) {
+                this.stopCamera().then(() => this.startCamera());
             }
         });
-}
 
-
-function onScanSuccess(decodedText, decodedResult) {
-    if (isScanning && html5QrCode) {
-        html5QrCode.stop().then(() => {
-            isScanning = false;
-            updateUIStopped();
-            processResult(decodedText);
-        }).catch(err => console.error(err));
-    } else {
-        processResult(decodedText);
-    }
-}
-
-function processResult(decodedText) {
-    const eventSelect = document.getElementById('event_id');
-    if (!eventSelect.value) {
-        alert("⚠️ PERHATIAN: Silakan Pilih Event Aktif terlebih dahulu di bagian atas!");
-        eventSelect.focus();
-        return;
-    }
-    
-    document.getElementById('nim').value = decodedText.trim();
-    document.getElementById('nim').style.background = '#ecfdf5';
-    document.getElementById('nim').style.color = '#059669';
-    
-    document.getElementById('scanForm').submit();
-}
-
-function startCamera() {
-    const eventSelect = document.getElementById('event_id');
-    if (!eventSelect.value) {
-        alert("⚠️ PERHATIAN: Silakan Pilih Event Aktif terlebih dahulu di bagian atas sebelum menyalakan kamera!");
-        eventSelect.focus();
-        return;
+        this.els.uploadInput.addEventListener('change', (e) => this.handleFileUpload(e));
+        
+        // Zoom Controls
+        this.els.btnZoomIn.addEventListener('click', () => this.setZoom(this.zoomLevel + 0.2));
+        this.els.btnZoomOut.addEventListener('click', () => this.setZoom(this.zoomLevel - 0.2));
     }
 
-    // Pastikan currentCameraId mengambil value terbaru dari dropdown
-    const cameraSelect = document.getElementById('cameraSelect');
-    if (cameraSelect && cameraSelect.value) {
-        currentCameraId = cameraSelect.value;
+    setZoom(level) {
+        // Batasi zoom antara 1.0x dan 3.0x
+        this.zoomLevel = Math.max(1.0, Math.min(3.0, level));
+        this.els.zoomLabel.innerText = this.zoomLevel.toFixed(1) + 'x';
+        this.els.reader.style.transform = `scale(${this.zoomLevel})`;
     }
 
-    if (!currentCameraId) {
-        alert("Pilih kamera terlebih dahulu!");
-        return;
-    }
-
-    // Tampilkan container DULU agar offsetWidth bisa dibaca dengan benar
-    document.getElementById('reader-container').style.display = 'block';
-    let blurTip = document.getElementById('blur-tip');
-    blurTip.style.display = 'block';
-    if (currentMode === 'qr') {
-        blurTip.innerHTML = '💡 <b>Tips QR Code:</b> Posisikan QR Code tegak lurus di depan kamera, jarak 30-50cm. Tangan jangan bergetar.';
-    } else {
-        blurTip.innerHTML = '💡 <b>Tips Barcode:</b> Posisikan barcode tegak lurus, jarak 30-50cm. Jangan terlalu dekat atau jauh.';
-    }
-
-    // Baca lebar SETELAH container visible agar nilai benar
-    let containerWidth = document.getElementById('reader').offsetWidth;
-    // Gunakan nilai fixed yang aman jika belum ter-render (fallback)
-    let boxWidth = currentMode === 'qr' ? 250 : (containerWidth > 100 ? Math.min(Math.floor(containerWidth * 0.9), 420) : 300);
-    let boxHeight = currentMode === 'qr' ? 250 : 150;
-
-    // KONFIGURASI BERSIH: Hanya gunakan cameraId sebagai parameter pertama.
-    // 1. Tanpa qrbox -> Scanner akan membaca SELURUH frame video. (Jika pakai qrbox, barcode yang memenuhi kotak akan terpotong quiet zone-nya sehingga gagal scan).
-    // 2. fps 30 -> Sesuai dengan konfigurasi awal yang sukses.
-    // 3. useBarCodeDetectorIfSupported -> Gunakan hardware native jika ada.
-    html5QrCode.start(
-        currentCameraId,
-        {
-            fps: 30,
-            useBarCodeDetectorIfSupported: true
-        },
-        onScanSuccess,
-        (errorMessage) => {
-            // Abaikan error background pemindaian normal (bukan error fatal)
+    refreshCameraList() {
+        this.els.cameraSelect.innerHTML = '<option value="">[ Meminta izin & mendeteksi kamera... ]</option>';
+        if (this.els.statusDiv) this.els.statusDiv.style.display = 'none';
+        if (this.els.refreshBtn) {
+            this.els.refreshBtn.disabled = true;
+            this.els.refreshBtn.style.opacity = '0.6';
         }
-    ).then(() => {
-        isScanning = true;
-        document.getElementById('btnStartScan').style.display = 'none';
-        document.getElementById('btnStopScan').style.display = 'inline-flex';
-        document.getElementById('cameraSelect').disabled = true;
-        eventSelect.disabled = true;
-    }).catch(err => {
-        console.error("Error starting camera: ", err);
-        alert("⚠️ Gagal memulai kamera.\n\nTips:\n1. Cabut dan colokkan kembali kamera USB.\n2. Pastikan tidak ada aplikasi lain (Zoom/Meet) yang memakai kamera.\n3. Error: " + err);
-        document.getElementById('reader-container').style.display = 'none';
-        document.getElementById('cameraSelect').disabled = false;
-        eventSelect.disabled = false;
-    });
-}
 
-function stopCamera() {
-    return new Promise((resolve, reject) => {
-        if (html5QrCode && isScanning) {
-            html5QrCode.stop().then(() => {
-                isScanning = false;
-                updateUIStopped();
+        navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+            .then((tempStream) => {
+                tempStream.getTracks().forEach(track => track.stop());
+                return Html5Qrcode.getCameras();
+            })
+            .then((devices) => {
+                if (this.els.refreshBtn) {
+                    this.els.refreshBtn.disabled = false;
+                    this.els.refreshBtn.style.opacity = '1';
+                }
+
+                if (!devices || devices.length === 0) {
+                    this.els.cameraSelect.innerHTML = '<option value="">Tidak ada kamera terdeteksi</option>';
+                    this.showStatus('⚠️ Tidak ada kamera ditemukan. Pastikan kamera USB terpasang.', '#dc2626');
+                    return;
+                }
+
+                this.els.cameraSelect.innerHTML = '';
+                devices.forEach((device) => {
+                    const option = document.createElement('option');
+                    option.value = device.id;
+                    option.text = device.label || ('Kamera ' + device.id.substring(0, 8));
+                    this.els.cameraSelect.appendChild(option);
+                });
+
+                this.currentCameraId = devices[0].id;
+                this.showStatus(`✅ ${devices.length} kamera terdeteksi.`, '#059669');
+            })
+            .catch((err) => {
+                if (this.els.refreshBtn) {
+                    this.els.refreshBtn.disabled = false;
+                    this.els.refreshBtn.style.opacity = '1';
+                }
+                console.error('Error getting cameras: ', err);
+                
+                let msg = 'Akses kamera ditolak.';
+                if (err.name === 'NotAllowedError') msg = '🔒 Izin kamera ditolak. Izinkan di address bar browser.';
+                else if (err.name === 'NotFoundError') msg = '🔌 Kamera tidak ditemukan.';
+                
+                this.els.cameraSelect.innerHTML = '<option value="">Kamera tidak dapat diakses</option>';
+                this.showStatus(msg, '#dc2626');
+            });
+    }
+
+    showStatus(msg, color) {
+        if (!this.els.statusDiv) return;
+        this.els.statusDiv.innerHTML = msg;
+        this.els.statusDiv.style.color = color;
+        this.els.statusDiv.style.display = 'block';
+    }
+
+    setMode(mode) {
+        this.currentMode = mode;
+        const isQr = mode === 'qr';
+        
+        this.els.btnQR.className = isQr ? 'btn btn-primary' : 'btn btn-secondary';
+        this.els.btnQR.style.cssText = isQr 
+            ? 'flex: 1; padding: 12px; border-radius: 12px; background: #4f46e5; color: #fff; border: 1px solid transparent;'
+            : 'flex: 1; padding: 12px; border-radius: 12px; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0;';
+            
+        this.els.btnBarcode.className = !isQr ? 'btn btn-primary' : 'btn btn-secondary';
+        this.els.btnBarcode.style.cssText = !isQr 
+            ? 'flex: 1; padding: 12px; border-radius: 12px; background: #4f46e5; color: #fff; border: 1px solid transparent;'
+            : 'flex: 1; padding: 12px; border-radius: 12px; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0;';
+
+        if (this.els.blurTip) {
+            this.els.blurTip.innerHTML = isQr 
+                ? '💡 <b>Tips QR Code:</b> Posisikan QR Code tegak lurus, jarak 30-50cm. Jika terlalu jauh, gunakan tombol (+).' 
+                : '💡 <b>Tips Barcode:</b> Letakkan KTM di meja, kamera 40-50cm. Gunakan tombol Zoom (+) agar barcode membesar tanpa blur.';
+        }
+
+        if (this.isScanning) {
+            this.stopCamera().then(() => this.startCamera());
+        }
+    }
+
+    startCamera() {
+        if (!this.els.eventSelect.value) {
+            alert("⚠️ PERHATIAN: Silakan Pilih Event Aktif terlebih dahulu di bagian atas!");
+            this.els.eventSelect.focus();
+            return;
+        }
+
+        if (this.els.cameraSelect.value) {
+            this.currentCameraId = this.els.cameraSelect.value;
+        }
+
+        if (!this.currentCameraId) {
+            alert("Pilih kamera terlebih dahulu!");
+            return;
+        }
+
+        // Tampilkan container DULU
+        this.els.readerContainer.style.display = 'block';
+        this.els.blurTip.style.display = 'block';
+        
+        // Reset Zoom saat mulai
+        this.setZoom(1.0);
+
+        // KUNCI OPTIMASI BLUR: Batasi format untuk mengurangi beban CPU pada frame buram.
+        const formats = this.currentMode === 'qr' ? [0] : [3, 5, 9, 13]; // 0=QR, 3=CODE_39, 5=CODE_128, 9=EAN_13, 13=ITF
+
+        this.html5QrCode.start(
+            this.currentCameraId,
+            {
+                fps: 15, // Cukup untuk responsif, tidak terlalu berat
+                formatsToSupport: formats, 
+                useBarCodeDetectorIfSupported: true
+                // Tanpa qrbox -> menggunakan seluruh frame
+                // Tanpa videoConstraints -> menggunakan resolusi optimal default hardware
+            },
+            (decodedText) => this.onScanSuccess(decodedText),
+            (errorMessage) => { /* Abaikan error tiap frame */ }
+        ).then(() => {
+            this.isScanning = true;
+            this.updateUIStarted();
+        }).catch((err) => {
+            console.error("Error starting camera: ", err);
+            alert("⚠️ Gagal memulai kamera. Pastikan tidak dipakai aplikasi lain.\nError: " + err);
+            this.els.readerContainer.style.display = 'none';
+            this.updateUIStopped();
+        });
+    }
+
+    stopCamera() {
+        return new Promise((resolve) => {
+            if (this.html5QrCode && this.isScanning) {
+                this.html5QrCode.stop().then(() => {
+                    this.isScanning = false;
+                    this.updateUIStopped();
+                    resolve();
+                }).catch((err) => {
+                    console.error("Error stopping camera: ", err);
+                    resolve();
+                });
+            } else {
                 resolve();
-            }).catch(err => {
-                console.error("Error stopping camera: ", err);
-                reject(err);
-            });
+            }
+        });
+    }
+
+    onScanSuccess(decodedText) {
+        if (this.isScanning) {
+            this.stopCamera().then(() => this.processResult(decodedText));
         } else {
-            resolve();
+            this.processResult(decodedText);
         }
-    });
-}
+    }
 
-function updateUIStopped() {
-    document.getElementById('btnStartScan').style.display = 'inline-flex';
-    document.getElementById('btnStopScan').style.display = 'none';
-    document.getElementById('reader-container').style.display = 'none';
-    document.getElementById('cameraSelect').disabled = false;
-    document.getElementById('event_id').disabled = false; // Unlock event selection
-}
-
-function setMode(mode) {
-    currentMode = mode;
-    
-    let btnQR = document.getElementById('btnModeQR');
-    let btnBarcode = document.getElementById('btnModeBarcode');
-    let blurTip = document.getElementById('blur-tip');
-    
-    if (mode === 'qr') {
-        btnQR.className = 'btn btn-primary';
-        btnQR.style.background = '#4f46e5';
-        btnQR.style.color = '#fff';
-        btnQR.style.border = '1px solid transparent';
+    processResult(decodedText) {
+        if (!this.els.eventSelect.value) {
+            alert("⚠️ PERHATIAN: Silakan Pilih Event Aktif terlebih dahulu!");
+            this.els.eventSelect.focus();
+            return;
+        }
         
-        btnBarcode.className = 'btn btn-secondary';
-        btnBarcode.style.background = '#f1f5f9';
-        btnBarcode.style.color = '#64748b';
-        btnBarcode.style.border = '1px solid #e2e8f0';
-        if (blurTip) blurTip.innerHTML = '💡 <b>Tips QR Code:</b> Jauhkan sedikit QR Code (sekitar 15-25cm) dari kamera agar gambar fokus & tajam (tidak blur).';
-    } else {
-        btnBarcode.className = 'btn btn-primary';
-        btnBarcode.style.background = '#4f46e5';
-        btnBarcode.style.color = '#fff';
-        btnBarcode.style.border = '1px solid transparent';
+        this.els.nimInput.value = decodedText.trim();
+        this.els.nimInput.style.background = '#ecfdf5';
+        this.els.nimInput.style.color = '#059669';
+        this.els.scanForm.submit();
+    }
+
+    handleFileUpload(e) {
+        if (e.target.files.length === 0) return;
         
-        btnQR.className = 'btn btn-secondary';
-        btnQR.style.background = '#f1f5f9';
-        btnQR.style.color = '#64748b';
-        btnQR.style.border = '1px solid #e2e8f0';
-        if (blurTip) blurTip.innerHTML = '💡 <b>Tips Barcode:</b> Jauhkan sedikit Barcode KTM (sekitar 15-25cm) dari kamera agar gambar fokus & tajam (tidak blur).';
-    }
-
-    if (isScanning) {
-        stopCamera().then(() => {
-            startCamera();
-        });
-    }
-}
-
-// LOGIKA UPLOAD GAMBAR
-document.getElementById('qr-input-file').addEventListener('change', function(e) {
-    if (e.target.files.length === 0) return;
-    
-    const eventSelect = document.getElementById('event_id');
-    if (!eventSelect.value) {
-        alert("⚠️ PERHATIAN: Silakan Pilih Event Aktif terlebih dahulu di bagian atas sebelum upload file!");
-        eventSelect.focus();
-        e.target.value = '';
-        return;
-    }
-
-    const imageFile = e.target.files[0];
-    const statusDiv = document.getElementById('upload-status');
-    statusDiv.style.display = 'none';
-
-    if (isScanning) {
-        stopCamera();
-    }
-
-    const fileScanner = new Html5Qrcode("hidden-reader");
-    fileScanner.scanFile(imageFile, true)
-        .then(decodedText => {
-            processResult(decodedText);
-        })
-        .catch(err => {
-            statusDiv.style.display = 'block';
-            statusDiv.innerHTML = '<i class="ph-bold ph-warning-circle"></i> Barcode/QR tidak terdeteksi pada gambar ini.';
+        if (!this.els.eventSelect.value) {
+            alert("⚠️ PERHATIAN: Silakan Pilih Event Aktif terlebih dahulu sebelum upload!");
+            this.els.eventSelect.focus();
             e.target.value = '';
-        });
+            return;
+        }
+
+        const imageFile = e.target.files[0];
+        this.els.uploadStatus.style.display = 'none';
+
+        if (this.isScanning) {
+            this.stopCamera();
+        }
+
+        const fileScanner = new Html5Qrcode("hidden-reader");
+        fileScanner.scanFile(imageFile, true)
+            .then(decodedText => this.processResult(decodedText))
+            .catch(() => {
+                this.els.uploadStatus.style.display = 'block';
+                this.els.uploadStatus.innerHTML = '<i class="ph-bold ph-warning-circle"></i> Barcode/QR tidak terdeteksi pada gambar ini.';
+                e.target.value = '';
+            });
+    }
+
+    updateUIStarted() {
+        this.els.btnStart.style.display = 'none';
+        this.els.btnStop.style.display = 'inline-flex';
+        this.els.cameraSelect.disabled = true;
+        this.els.eventSelect.disabled = true;
+    }
+
+    updateUIStopped() {
+        this.els.btnStart.style.display = 'inline-flex';
+        this.els.btnStop.style.display = 'none';
+        this.els.readerContainer.style.display = 'none';
+        this.els.cameraSelect.disabled = false;
+        this.els.eventSelect.disabled = false;
+    }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    window.app = new ScannerApp();
 });
 </script>
 @endsection
