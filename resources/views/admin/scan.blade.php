@@ -296,7 +296,8 @@ class ScannerApp {
             this.currentCameraId,
             {
                 fps: 20,
-                useBarCodeDetectorIfSupported: true,
+                useBarCodeDetectorIfSupported: false, // MATIKAN NATIVE API, PAKSA PENGGUNAAN ZXING MURNI
+                disableFlip: false, // Bantu deteksi jika barcode terbalik
                 formatsToSupport: [0, 3], // 0 = QR, 3 = CODE_39 (Libre Barcode 39)
                 qrbox: (videoWidth, videoHeight) => {
                     const width = Math.min(videoWidth * 0.9, 600);
