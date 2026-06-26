@@ -101,15 +101,8 @@
                     <div id="reader" style="width: 100%; transition: transform 0.2s ease-in-out; transform-origin: center;"></div>
                 </div>
 
-                <!-- Zoom Controls -->
-                <div id="zoom-controls" style="position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); padding: 6px 16px; border-radius: 20px; display: flex; gap: 16px; align-items: center; z-index: 10;">
-                    <button type="button" id="btnZoomOut" style="background:none; border:none; color:white; cursor:pointer; padding:4px;"><i class="ph-bold ph-minus"></i></button>
-                    <span id="zoomLabel" style="color:white; font-size: 13px; font-weight:600; min-width: 40px; text-align:center;">1.0x</span>
-                    <button type="button" id="btnZoomIn" style="background:none; border:none; color:white; cursor:pointer; padding:4px;"><i class="ph-bold ph-plus"></i></button>
-                </div>
-
                 <div id="blur-tip" style="position: relative; z-index: 10; background: #1e293b; color: #f8fafc; padding: 12px 16px; font-size: 13px; text-align: center; border-top: 1px solid #334155; display: none;">
-                    💡 <b>Tips:</b> Letakkan Barcode/QR di depan kamera, jarak 30-50cm. Gunakan tombol Zoom (+) agar kode membesar tanpa blur.
+                    💡 <b>Tips:</b> Letakkan Barcode/QR tegak lurus di dalam kotak fokus, jarak 20-30cm.
                 </div>
             </div>
 
@@ -155,7 +148,6 @@ class ScannerApp {
         this.currentMode = 'qr';
         this.currentCameraId = null;
         this.isScanning = false;
-        this.zoomLevel = 1.0;
         this.isHighContrast = false;
         
         // DOM Elements
@@ -173,10 +165,7 @@ class ScannerApp {
             nimInput: document.getElementById('nim'),
             scanForm: document.getElementById('scanForm'),
             uploadInput: document.getElementById('qr-input-file'),
-            uploadStatus: document.getElementById('upload-status'),
-            btnZoomIn: document.getElementById('btnZoomIn'),
-            btnZoomOut: document.getElementById('btnZoomOut'),
-            zoomLabel: document.getElementById('zoomLabel')
+            uploadStatus: document.getElementById('upload-status')
         };
 
         this.init();
@@ -202,9 +191,6 @@ class ScannerApp {
 
         this.els.uploadInput.addEventListener('change', (e) => this.handleFileUpload(e));
         
-        // Zoom & Contrast Controls
-        this.els.btnZoomIn.addEventListener('click', () => this.setZoom(this.zoomLevel + 0.2));
-        this.els.btnZoomOut.addEventListener('click', () => this.setZoom(this.zoomLevel - 0.2));
         this.els.btnContrast.addEventListener('click', () => this.toggleContrast());
     }
 
@@ -225,13 +211,6 @@ class ScannerApp {
             this.els.btnContrast.style.borderColor = '#e2e8f0';
             if (videoElement) videoElement.style.filter = "none";
         }
-    }
-
-    setZoom(level) {
-        // Batasi zoom antara 1.0x dan 3.0x
-        this.zoomLevel = Math.max(1.0, Math.min(3.0, level));
-        this.els.zoomLabel.innerText = this.zoomLevel.toFixed(1) + 'x';
-        this.els.reader.style.transform = `scale(${this.zoomLevel})`;
     }
 
     refreshCameraList() {
@@ -312,20 +291,19 @@ class ScannerApp {
         // Tampilkan container DULU
         this.els.readerContainer.style.display = 'block';
         this.els.blurTip.style.display = 'block';
-        
-        // Reset Zoom saat mulai
-        this.setZoom(1.0);
-
-        // OMNI-SCANNER: Deteksi QR Code & SEMUA Barcode yang memungkinkan (termasuk NIM dengan titik)
-        // 0=QR, 2=CODABAR, 3=CODE_39, 4=CODE_93, 5=CODE_128, 9=EAN_13, 13=ITF
-        const formats = [0, 2, 3, 4, 5, 9, 13];
 
         this.html5QrCode.start(
             this.currentCameraId,
             {
-                fps: 20, // Dioptimalkan untuk Omni-Scanner
-                formatsToSupport: formats, 
-                useBarCodeDetectorIfSupported: true
+                fps: 20,
+                useBarCodeDetectorIfSupported: true,
+                // SOLUSI BUG RESOLUSI TINGGI: Area fokus lebar (wide rectangle)
+                // Memotong background resolusi tinggi yang membuat ZXing kewalahan.
+                qrbox: (videoWidth, videoHeight) => {
+                    const width = Math.min(videoWidth * 0.9, 600);
+                    return { width: width, height: 250 };
+                }
+                // HAPUS formatsToSupport agar ZXing menebak semua format secara otomatis
             },
             (decodedText) => this.onScanSuccess(decodedText),
             (errorMessage) => { /* Abaikan error tiap frame */ }
