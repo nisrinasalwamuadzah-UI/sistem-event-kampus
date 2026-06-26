@@ -300,15 +300,14 @@ function startCamera() {
     let boxHeight = currentMode === 'qr' ? 250 : 150;
 
     // KONFIGURASI BERSIH: Hanya gunakan cameraId sebagai parameter pertama.
-    // Tanpa videoConstraints (menyebabkan blur & error).
-    // Tanpa formatsToSupport (membatasi format & gagal baca).
-    // Tanpa useBarCodeDetectorIfSupported — gunakan ZXing yang jauh lebih robust
-    // untuk kondisi gambar blur/low-light dibanding Chrome BarcodeDetector.
+    // 1. Tanpa qrbox -> Scanner akan membaca SELURUH frame video. (Jika pakai qrbox, barcode yang memenuhi kotak akan terpotong quiet zone-nya sehingga gagal scan).
+    // 2. fps 30 -> Sesuai dengan konfigurasi awal yang sukses.
+    // 3. useBarCodeDetectorIfSupported -> Gunakan hardware native jika ada.
     html5QrCode.start(
         currentCameraId,
         {
-            fps: 15,
-            qrbox: { width: boxWidth, height: boxHeight }
+            fps: 30,
+            useBarCodeDetectorIfSupported: true
         },
         onScanSuccess,
         (errorMessage) => {
