@@ -22,7 +22,7 @@
             </div>
         @endif
 
-        <form action="{{ route('kehadiran.store') }}" method="POST" id="scanForm">
+        <form action="{{ url('/admin/scan') }}" method="POST" id="scanForm">
             @csrf
             
             <!-- STEP 1: PILIH EVENT -->
