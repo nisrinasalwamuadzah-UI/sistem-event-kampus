@@ -316,8 +316,9 @@ class ScannerApp {
         // Reset Zoom saat mulai
         this.setZoom(1.0);
 
-        // OMNI-SCANNER: Deteksi QR Code & Barcode NIM sekaligus!
-        const formats = [0, 3, 5, 9, 13]; // 0=QR, 3=CODE_39, 5=CODE_128, 9=EAN_13, 13=ITF
+        // OMNI-SCANNER: Deteksi QR Code & SEMUA Barcode yang memungkinkan (termasuk NIM dengan titik)
+        // 0=QR, 2=CODABAR, 3=CODE_39, 4=CODE_93, 5=CODE_128, 9=EAN_13, 13=ITF
+        const formats = [0, 2, 3, 4, 5, 9, 13];
 
         this.html5QrCode.start(
             this.currentCameraId,
