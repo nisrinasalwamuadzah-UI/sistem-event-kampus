@@ -74,7 +74,7 @@
                 </div>
 
                 <p id="helper-text" style="color: #64748b; font-size: 12px; margin-top: 10px; text-align: center;">
-                    💡 Sedang menggunakan Quagga2 (Mesin khusus Barcode). Sangat tangguh membaca garis blur!
+                    💡 Pastikan garis barcode terlihat jelas di dalam layar kamera.
                 </p>
             </div>
 
@@ -251,7 +251,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             contBarcode.style.display = 'block';
             contQr.style.display = 'none';
-            helperText.innerHTML = '💡 Sedang menggunakan Quagga2 (Mesin khusus Barcode). Sangat tangguh membaca garis blur!';
+            helperText.innerHTML = '💡 Pastikan garis barcode terlihat jelas di dalam layar kamera.';
             
             startBarcodeScanner();
         } else {
@@ -265,7 +265,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             contQr.style.display = 'block';
             contBarcode.style.display = 'none';
-            helperText.innerHTML = '💡 Sedang menggunakan ZXing (Mesin khusus QR Code). Kecepatan pemindaian maksimal!';
+            helperText.innerHTML = '💡 Pastikan seluruh kotak QR Code terlihat di layar.';
             
             startQrScanner();
         }
