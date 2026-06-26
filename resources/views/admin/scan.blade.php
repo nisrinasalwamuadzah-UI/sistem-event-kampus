@@ -60,13 +60,13 @@
                 <p style="color: #64748b; font-size: 13px; margin-top: 8px; margin-bottom: 0;">Pilih event di atas sebelum menyalakan kamera atau mengunggah gambar.</p>
             </div>
 
-            <!-- MODE TOGGLE -->
+            <!-- KONTROL SCANNER (OMNI-MODE & KONTRAS) -->
             <div style="display: flex; gap: 8px; margin-bottom: 16px;">
-                <button type="button" id="btnModeQR" onclick="setMode('qr')" class="btn btn-primary" style="flex: 1; padding: 12px; border-radius: 12px;">
-                    <i class="ph-bold ph-qr-code"></i> Mode QR Code
-                </button>
-                <button type="button" id="btnModeBarcode" onclick="setMode('barcode')" class="btn btn-secondary" style="flex: 1; padding: 12px; border-radius: 12px; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0;">
-                    <i class="ph-bold ph-barcode"></i> Mode Barcode
+                <div style="flex: 2; padding: 12px; border-radius: 12px; background: #e0e7ff; color: #4f46e5; border: 1px solid #c7d2fe; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px;">
+                    <i class="ph-bold ph-scan" style="margin-right: 8px; font-size: 18px;"></i> Omni-Scanner Aktif (QR & Barcode)
+                </div>
+                <button type="button" id="btnContrastToggle" class="btn btn-secondary" style="flex: 1; padding: 12px; border-radius: 12px; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; font-weight: 600; font-size: 14px;">
+                    <i class="ph-bold ph-aperture" style="margin-right: 4px;"></i> Hitam Putih
                 </button>
             </div>
 
@@ -109,7 +109,7 @@
                 </div>
 
                 <div id="blur-tip" style="position: relative; z-index: 10; background: #1e293b; color: #f8fafc; padding: 12px 16px; font-size: 13px; text-align: center; border-top: 1px solid #334155; display: none;">
-                    💡 <b>Tips QR Code:</b> Posisikan QR Code tegak lurus di depan kamera, jarak 30-50cm.
+                    💡 <b>Tips:</b> Letakkan Barcode/QR di depan kamera, jarak 30-50cm. Gunakan tombol Zoom (+) agar kode membesar tanpa blur.
                 </div>
             </div>
 
@@ -156,6 +156,7 @@ class ScannerApp {
         this.currentCameraId = null;
         this.isScanning = false;
         this.zoomLevel = 1.0;
+        this.isHighContrast = false;
         
         // DOM Elements
         this.els = {
@@ -168,8 +169,7 @@ class ScannerApp {
             btnStop: document.getElementById('btnStopScan'),
             eventSelect: document.getElementById('event_id'),
             blurTip: document.getElementById('blur-tip'),
-            btnQR: document.getElementById('btnModeQR'),
-            btnBarcode: document.getElementById('btnModeBarcode'),
+            btnContrast: document.getElementById('btnContrastToggle'),
             nimInput: document.getElementById('nim'),
             scanForm: document.getElementById('scanForm'),
             uploadInput: document.getElementById('qr-input-file'),
@@ -187,8 +187,6 @@ class ScannerApp {
         this.bindEvents();
         this.refreshCameraList();
         
-        // Posisikan method setMode ke window agar bisa dipanggil HTML onclick
-        window.setMode = (mode) => this.setMode(mode);
         window.startCamera = () => this.startCamera();
         window.stopCamera = () => this.stopCamera();
         window.refreshCameraList = () => this.refreshCameraList();
@@ -204,9 +202,29 @@ class ScannerApp {
 
         this.els.uploadInput.addEventListener('change', (e) => this.handleFileUpload(e));
         
-        // Zoom Controls
+        // Zoom & Contrast Controls
         this.els.btnZoomIn.addEventListener('click', () => this.setZoom(this.zoomLevel + 0.2));
         this.els.btnZoomOut.addEventListener('click', () => this.setZoom(this.zoomLevel - 0.2));
+        this.els.btnContrast.addEventListener('click', () => this.toggleContrast());
+    }
+
+    toggleContrast() {
+        this.isHighContrast = !this.isHighContrast;
+        const videoElement = document.querySelector('#reader video');
+        
+        if (this.isHighContrast) {
+            this.els.btnContrast.className = 'btn btn-primary';
+            this.els.btnContrast.style.background = '#4f46e5';
+            this.els.btnContrast.style.color = '#fff';
+            this.els.btnContrast.style.borderColor = 'transparent';
+            if (videoElement) videoElement.style.filter = "grayscale(100%) contrast(150%)";
+        } else {
+            this.els.btnContrast.className = 'btn btn-secondary';
+            this.els.btnContrast.style.background = '#f1f5f9';
+            this.els.btnContrast.style.color = '#64748b';
+            this.els.btnContrast.style.borderColor = '#e2e8f0';
+            if (videoElement) videoElement.style.filter = "none";
+        }
     }
 
     setZoom(level) {
@@ -275,31 +293,6 @@ class ScannerApp {
         this.els.statusDiv.style.display = 'block';
     }
 
-    setMode(mode) {
-        this.currentMode = mode;
-        const isQr = mode === 'qr';
-        
-        this.els.btnQR.className = isQr ? 'btn btn-primary' : 'btn btn-secondary';
-        this.els.btnQR.style.cssText = isQr 
-            ? 'flex: 1; padding: 12px; border-radius: 12px; background: #4f46e5; color: #fff; border: 1px solid transparent;'
-            : 'flex: 1; padding: 12px; border-radius: 12px; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0;';
-            
-        this.els.btnBarcode.className = !isQr ? 'btn btn-primary' : 'btn btn-secondary';
-        this.els.btnBarcode.style.cssText = !isQr 
-            ? 'flex: 1; padding: 12px; border-radius: 12px; background: #4f46e5; color: #fff; border: 1px solid transparent;'
-            : 'flex: 1; padding: 12px; border-radius: 12px; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0;';
-
-        if (this.els.blurTip) {
-            this.els.blurTip.innerHTML = isQr 
-                ? '💡 <b>Tips QR Code:</b> Posisikan QR Code tegak lurus, jarak 30-50cm. Jika terlalu jauh, gunakan tombol (+).' 
-                : '💡 <b>Tips Barcode:</b> Letakkan KTM di meja, kamera 40-50cm. Gunakan tombol Zoom (+) agar barcode membesar tanpa blur.';
-        }
-
-        if (this.isScanning) {
-            this.stopCamera().then(() => this.startCamera());
-        }
-    }
-
     startCamera() {
         if (!this.els.eventSelect.value) {
             alert("⚠️ PERHATIAN: Silakan Pilih Event Aktif terlebih dahulu di bagian atas!");
@@ -323,23 +316,27 @@ class ScannerApp {
         // Reset Zoom saat mulai
         this.setZoom(1.0);
 
-        // KUNCI OPTIMASI BLUR: Batasi format untuk mengurangi beban CPU pada frame buram.
-        const formats = this.currentMode === 'qr' ? [0] : [3, 5, 9, 13]; // 0=QR, 3=CODE_39, 5=CODE_128, 9=EAN_13, 13=ITF
+        // OMNI-SCANNER: Deteksi QR Code & Barcode NIM sekaligus!
+        const formats = [0, 3, 5, 9, 13]; // 0=QR, 3=CODE_39, 5=CODE_128, 9=EAN_13, 13=ITF
 
         this.html5QrCode.start(
             this.currentCameraId,
             {
-                fps: 15, // Cukup untuk responsif, tidak terlalu berat
+                fps: 20, // Dioptimalkan untuk Omni-Scanner
                 formatsToSupport: formats, 
                 useBarCodeDetectorIfSupported: true
-                // Tanpa qrbox -> menggunakan seluruh frame
-                // Tanpa videoConstraints -> menggunakan resolusi optimal default hardware
             },
             (decodedText) => this.onScanSuccess(decodedText),
             (errorMessage) => { /* Abaikan error tiap frame */ }
         ).then(() => {
             this.isScanning = true;
             this.updateUIStarted();
+            
+            // Re-apply filter jika aktif
+            if (this.isHighContrast) {
+                const videoElement = document.querySelector('#reader video');
+                if (videoElement) videoElement.style.filter = "grayscale(100%) contrast(150%)";
+            }
         }).catch((err) => {
             console.error("Error starting camera: ", err);
             alert("⚠️ Gagal memulai kamera. Pastikan tidak dipakai aplikasi lain.\nError: " + err);
