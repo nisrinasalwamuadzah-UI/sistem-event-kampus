@@ -6,7 +6,7 @@
 
     <div class="header-section">
         <h2>Scan Absensi Mahasiswa</h2>
-        <p>Arahkan kamera ke Barcode/QR Code atau Upload Foto KTM.</p>
+        <p>Pilih mode kamera sesuai dengan jenis kartu (KTM Fisik = Barcode 1D, HP = QR Code).</p>
     </div>
 
     <div class="form-container" style="max-width: 600px; margin: 0 auto;">
@@ -16,62 +16,76 @@
                 <i class="ph-bold ph-check-circle" style="font-size: 20px;"></i> {{ session('success') }}
             </div>
         @endif
-
         @if(session('error'))
             <div style="background: #fef2f2; color: #dc2626; padding: 16px; border-radius: 12px; border: 1px solid #fecaca; margin-bottom: 24px; font-size: 14px; display: flex; align-items: center; gap: 8px;">
-                <i class="ph-bold ph-warning-circle" style="font-size: 20px;"></i> {{ session('error') }}
+                <i class="ph-bold ph-warning" style="font-size: 20px;"></i> {{ session('error') }}
             </div>
         @endif
 
-        <form id="scanForm" action="{{ url('/admin/scan') }}" method="POST">
+        <form action="{{ route('kehadiran.store') }}" method="POST" id="scanForm">
             @csrf
-
+            
             <!-- STEP 1: PILIH EVENT -->
-            <div class="form-group" style="background: #f8fafc; border: 2px solid #cbd5e1; border-radius: 16px; padding: 20px; margin-bottom: 24px;">
-                <label style="font-size: 15px; font-weight: 700; color: #0f172a; display: block; margin-bottom: 10px;">
-                    <i class="ph-bold ph-calendar-check" style="color: #4f46e5;"></i> 1. Pilih Event Aktif (Wajib)
+            <div class="form-group" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; margin-bottom: 24px;">
+                <label style="font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 12px; display: block;">
+                    <i class="ph-bold ph-calendar-blank"></i> 1. Pilih Event Aktif (Wajib)
                 </label>
-                <select name="event_id" id="event_id" class="form-control" required
-                    style="cursor: pointer; font-size: 15px; padding: 12px 16px; border-radius: 12px; background: white; border: 1px solid #94a3b8; width: 100%; font-weight: 600; color: #334155;">
-                    <option value="">-- Silakan Pilih Event Terlebih Dahulu --</option>
+                <select name="event_id" id="event_id" class="form-control" required style="padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                    <option value="">-- Pilih Event --</option>
                     @foreach($events as $event)
                         <option value="{{ $event->id }}">{{ $event->nama_event }}</option>
                     @endforeach
                 </select>
             </div>
 
-            <!-- STEP 2: KAMERA SCANNER (FULL FRAME) -->
+            <!-- STEP 2: DUAL ENGINE CAMERA TABS -->
             <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; margin-bottom: 24px;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                     <label style="font-size: 14px; font-weight: 600; color: #334155; margin: 0;">
-                        <i class="ph-bold ph-video-camera"></i> 2. Arahkan Kamera (QR / Barcode)
+                        <i class="ph-bold ph-video-camera"></i> 2. Arahkan Kamera
                     </label>
                     <span id="scanIndicator" style="display: inline-flex; align-items: center; font-size: 12px; font-weight: 600; color: #059669; background: #dcfce7; padding: 4px 8px; border-radius: 12px;">
                         <span class="pulsing-dot" style="width: 8px; height: 8px; background: #059669; border-radius: 50%; display: inline-block; margin-right: 6px;"></span>
                         Kamera Aktif
                     </span>
                 </div>
+
+                <!-- TABS -->
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <button type="button" id="tab-barcode" onclick="switchTab('barcode')" style="flex: 1; padding: 10px; border-radius: 8px; border: none; background: #3b82f6; color: white; font-weight: bold; cursor: pointer; transition: all 0.2s;">
+                        <i class="ph-bold ph-barcode"></i> Barcode (KTM)
+                    </button>
+                    <button type="button" id="tab-qr" onclick="switchTab('qr')" style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; background: #f1f5f9; color: #64748b; font-weight: bold; cursor: pointer; transition: all 0.2s;">
+                        <i class="ph-bold ph-qr-code"></i> QR Code (HP)
+                    </button>
+                </div>
                 
-                <div style="position: relative; border-radius: 12px; overflow: hidden; border: 2px solid #3b82f6; background: black;">
-                    <div id="reader" style="width: 100%; min-height: 250px;"></div>
-                    <!-- CSS Laser Animation -->
-                    <div id="laser-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: block;">
+                <!-- CONTAINER BARCODE (QUAGGA2) -->
+                <div id="container-barcode" style="position: relative; border-radius: 12px; overflow: hidden; border: 2px solid #3b82f6; background: black; min-height: 250px; display: block;">
+                    <div id="barcode-reader" class="viewport" style="width: 100%;"></div>
+                    <div id="laser-overlay-barcode" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: block;">
                         <div class="laser-line"></div>
                     </div>
                 </div>
-                <p style="color: #64748b; font-size: 12px; margin-top: 10px; text-align: center;">
-                    💡 Seluruh area video aktif. Pastikan barcode terlihat jelas dan tidak silau.
+
+                <!-- CONTAINER QR CODE (ZXING) -->
+                <div id="container-qr" style="position: relative; border-radius: 12px; overflow: hidden; border: 2px solid #cbd5e1; background: black; min-height: 250px; display: none;">
+                    <div id="qr-reader" style="width: 100%;"></div>
+                </div>
+
+                <p id="helper-text" style="color: #64748b; font-size: 12px; margin-top: 10px; text-align: center;">
+                    💡 Sedang menggunakan Quagga2 (Mesin khusus Barcode). Sangat tangguh membaca garis blur!
                 </p>
             </div>
 
-            <!-- NIM RESULT -->
+            <!-- NIM RESULT (MANUAL INPUT UNLOCKED) -->
             <div class="form-group">
                 <label style="display: flex; justify-content: space-between; align-items: center;">
                     <span>NIM Mahasiswa</span>
                     <span style="font-size: 11px; color: #b45309; background: #fef3c7; padding: 2px 8px; border-radius: 8px;">Bisa diketik manual</span>
                 </label>
                 <input type="text" name="nim" id="nim"
-                    placeholder="Scan barcode, atau ketik NIM di sini..."
+                    placeholder="Scan otomatis, atau ketik manual..."
                     required class="form-control"
                     style="background: white; color: #0f172a; font-weight: 700; text-align: center; font-family: monospace; font-size: 18px; letter-spacing: 1px; border: 2px solid #cbd5e1;">
             </div>
@@ -87,35 +101,30 @@
 
 @section('extra_js')
 <style>
-/* Animasi Laser Pemindai */
-.laser-line {
-    width: 100%;
-    height: 3px;
-    background: rgba(239, 68, 68, 0.9);
-    box-shadow: 0 0 15px 3px rgba(239, 68, 68, 0.7);
-    position: absolute;
-    animation: scan 2.5s infinite ease-in-out;
-}
-@keyframes scan {
-    0% { top: 5%; opacity: 0; }
-    10% { opacity: 1; }
-    90% { opacity: 1; }
-    100% { top: 95%; opacity: 0; }
-}
-/* Animasi Dot Aktif */
-.pulsing-dot {
-    animation: pulse 1s infinite alternate;
-}
-@keyframes pulse {
-    0% { opacity: 0.3; }
-    100% { opacity: 1; }
-}
+.laser-line { width: 100%; height: 3px; background: rgba(239, 68, 68, 0.9); box-shadow: 0 0 15px 3px rgba(239, 68, 68, 0.7); position: absolute; animation: scan 2.5s infinite ease-in-out; }
+@keyframes scan { 0% { top: 5%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 95%; opacity: 0; } }
+.pulsing-dot { animation: pulse 1s infinite alternate; }
+@keyframes pulse { 0% { opacity: 0.3; } 100% { opacity: 1; } }
+
+/* Quagga2 Inject Styles */
+#barcode-reader video { width: 100% !important; object-fit: cover; }
+#barcode-reader canvas.drawing, #barcode-reader canvas.drawingBuffer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
 </style>
+
+<!-- Load Both Engines -->
+<script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
 <script>
 document.addEventListener("DOMContentLoaded", () => {
+    let currentMode = 'barcode'; // Tab aktif saat ini
+    let html5QrcodeScanner = null;
+    let isProcessing = false; // Mencegah multiple submit
 
-    function processResult(decodedText) {
+    // Global Result Handler
+    window.processResult = function(decodedText) {
+        if (isProcessing) return;
+        
         const eventSelect = document.getElementById('event_id');
         if (!eventSelect.value) {
             alert("⚠️ Pilih Event Aktif terlebih dahulu sebelum scan!");
@@ -123,7 +132,9 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // Ubah UI untuk indikasi sukses
+        isProcessing = true;
+
+        // Visual Feedback
         const nimField = document.getElementById('nim');
         nimField.value = decodedText.trim();
         nimField.style.background = '#ecfdf5';
@@ -134,43 +145,134 @@ document.addEventListener("DOMContentLoaded", () => {
         submitBtn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> Menyimpan...';
         submitBtn.style.background = '#059669';
         submitBtn.style.borderColor = '#059669';
-
-        document.getElementById('laser-overlay').style.display = 'none';
         
         const indicator = document.getElementById('scanIndicator');
         indicator.innerHTML = '✅ Berhasil!';
         indicator.style.background = '#ecfdf5';
         indicator.style.color = '#059669';
 
-        // Hentikan scanner dan submit form
+        // Hentikan engine yang sedang berjalan
+        if (currentMode === 'barcode') {
+            document.getElementById('laser-overlay-barcode').style.display = 'none';
+            try { Quagga.stop(); } catch(e) {}
+        } else if (currentMode === 'qr') {
+            if (html5QrcodeScanner) html5QrcodeScanner.pause(true);
+        }
+
+        // Auto submit
+        document.getElementById('scanForm').submit();
+    }
+
+    // --- ENGINE 1: QUAGGA2 (BARCODE 1D) ---
+    function startBarcodeScanner() {
+        Quagga.init({
+            inputStream: {
+                name: "Live",
+                type: "LiveStream",
+                target: document.querySelector('#barcode-reader'),
+                constraints: {
+                    facingMode: "environment" // No forced resolution
+                },
+            },
+            decoder: {
+                readers: ["code_128_reader", "code_39_reader"] // Khusus KTM/Barang
+            },
+            locate: true, // Gunakan Computer Vision (Locators)
+        }, function(err) {
+            if (err) {
+                console.error("Quagga Init Error:", err);
+                return;
+            }
+            Quagga.start();
+        });
+
+        // Event listener saat terdeteksi
+        Quagga.onDetected(function(result) {
+            var code = result.codeResult.code;
+            processResult(code);
+        });
+    }
+
+    function stopBarcodeScanner() {
+        try { Quagga.stop(); } catch(e) {}
+    }
+
+    // --- ENGINE 2: ZXING (QR CODE) ---
+    function startQrScanner() {
+        html5QrcodeScanner = new Html5QrcodeScanner(
+            "qr-reader",
+            {
+                fps: 10,
+                formatsToSupport: [ 0 ], // HANYA QR_CODE
+                supportedScanTypes: [0], // NO FILE UPLOAD UI
+                videoConstraints: { facingMode: "environment" }
+            },
+            false
+        );
+
+        html5QrcodeScanner.render(
+            (decodedText) => processResult(decodedText),
+            () => {} // Abaikan error per frame
+        );
+    }
+
+    function stopQrScanner() {
         if (html5QrcodeScanner) {
-            html5QrcodeScanner.pause(true); 
-            document.getElementById('scanForm').submit();
-        } else {
-            document.getElementById('scanForm').submit();
+            html5QrcodeScanner.clear().catch(()=>{});
+            html5QrcodeScanner = null;
         }
     }
 
-    // INISIALISASI KAMERA
-    let html5QrcodeScanner = new Html5QrcodeScanner(
-        "reader",
-        {
-            fps: 10,
-            useBarCodeDetectorIfSupported: true, 
-            rememberLastUsedCamera: true,
-            supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA], // MATIKAN FITUR UPLOAD BAWAAN LIBRARY
-            formatsToSupport: [ 0, 3, 5 ], // HANYA QR (0), Code 39 (3), Code 128 (5). Menghemat 80% beban CPU!
-            videoConstraints: {
-                facingMode: "environment" // Hapus resolusi paksa agar webcam murah tidak pecah/blur
-            }
-        },
-        /* verbose= */ false
-    );
+    // --- TAB MANAGER ---
+    window.switchTab = function(mode) {
+        if (mode === currentMode) return;
 
-    html5QrcodeScanner.render(
-        (decodedText) => processResult(decodedText),
-        () => {} // Abaikan error frame (sangat penting agar tidak macet)
-    );
+        // 1. Matikan engine yang menyala saat ini
+        if (currentMode === 'barcode') stopBarcodeScanner();
+        if (currentMode === 'qr') stopQrScanner();
+
+        currentMode = mode;
+
+        // 2. Ubah UI
+        const btnBarcode = document.getElementById('tab-barcode');
+        const btnQr = document.getElementById('tab-qr');
+        const contBarcode = document.getElementById('container-barcode');
+        const contQr = document.getElementById('container-qr');
+        const helperText = document.getElementById('helper-text');
+
+        if (mode === 'barcode') {
+            btnBarcode.style.background = '#3b82f6';
+            btnBarcode.style.color = 'white';
+            btnBarcode.style.border = 'none';
+            
+            btnQr.style.background = '#f1f5f9';
+            btnQr.style.color = '#64748b';
+            btnQr.style.border = '1px solid #cbd5e1';
+
+            contBarcode.style.display = 'block';
+            contQr.style.display = 'none';
+            helperText.innerHTML = '💡 Sedang menggunakan Quagga2 (Mesin khusus Barcode). Sangat tangguh membaca garis blur!';
+            
+            startBarcodeScanner();
+        } else {
+            btnQr.style.background = '#3b82f6';
+            btnQr.style.color = 'white';
+            btnQr.style.border = 'none';
+            
+            btnBarcode.style.background = '#f1f5f9';
+            btnBarcode.style.color = '#64748b';
+            btnBarcode.style.border = '1px solid #cbd5e1';
+
+            contQr.style.display = 'block';
+            contBarcode.style.display = 'none';
+            helperText.innerHTML = '💡 Sedang menggunakan ZXing (Mesin khusus QR Code). Kecepatan pemindaian maksimal!';
+            
+            startQrScanner();
+        }
+    }
+
+    // Mulai dengan Quagga2 secara default
+    startBarcodeScanner();
 });
 </script>
 @endsection
