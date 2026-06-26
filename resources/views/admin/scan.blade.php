@@ -66,15 +66,18 @@
 
             <!-- NIM RESULT -->
             <div class="form-group">
-                <label>NIM Mahasiswa (terisi otomatis)</label>
+                <label style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>NIM Mahasiswa</span>
+                    <span style="font-size: 11px; color: #b45309; background: #fef3c7; padding: 2px 8px; border-radius: 8px;">Bisa diketik manual</span>
+                </label>
                 <input type="text" name="nim" id="nim"
-                    placeholder="[ Menunggu hasil scan... ]"
-                    required readonly class="form-control"
-                    style="background: #f1f5f9; color: #64748b; font-weight: 700; text-align: center; font-family: monospace; font-size: 18px; letter-spacing: 1px;">
+                    placeholder="Scan barcode, atau ketik NIM di sini..."
+                    required class="form-control"
+                    style="background: white; color: #0f172a; font-weight: 700; text-align: center; font-family: monospace; font-size: 18px; letter-spacing: 1px; border: 2px solid #cbd5e1;">
             </div>
 
-            <button id="submitBtn" type="submit" class="btn btn-secondary" disabled style="width: 100%; opacity: 0.6; transition: all 0.3s;">
-                <i class="ph-bold ph-lock-key"></i> Otomatis submit setelah berhasil
+            <button id="submitBtn" type="submit" class="btn btn-primary" style="width: 100%; font-weight: bold; background: #4f46e5; border-color: #4f46e5; padding: 12px; font-size: 16px;">
+                <i class="ph-bold ph-check-circle"></i> Submit Kehadiran
             </button>
         </form>
 
@@ -125,12 +128,12 @@ document.addEventListener("DOMContentLoaded", () => {
         nimField.value = decodedText.trim();
         nimField.style.background = '#ecfdf5';
         nimField.style.color = '#059669';
+        nimField.style.borderColor = '#059669';
 
         const submitBtn = document.getElementById('submitBtn');
         submitBtn.innerHTML = '<i class="ph-bold ph-spinner ph-spin"></i> Menyimpan...';
         submitBtn.style.background = '#059669';
-        submitBtn.style.color = 'white';
-        submitBtn.style.opacity = '1';
+        submitBtn.style.borderColor = '#059669';
 
         document.getElementById('laser-overlay').style.display = 'none';
         
@@ -141,24 +144,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Hentikan scanner dan submit form
         if (html5QrcodeScanner) {
-            html5QrcodeScanner.pause(true); // Jauh lebih cepat dari clear()
+            html5QrcodeScanner.pause(true); 
             document.getElementById('scanForm').submit();
         } else {
             document.getElementById('scanForm').submit();
         }
     }
 
-    // INISIALISASI KAMERA (FULL FRAME, BEBAS FORMAT)
+    // INISIALISASI KAMERA
     let html5QrcodeScanner = new Html5QrcodeScanner(
         "reader",
         {
-            fps: 15, // Ditingkatkan agar lebih sensitif menangkap frame tajam
-            useBarCodeDetectorIfSupported: true, // KEMBALIKAN KE TRUE: API Native Android/iOS jauh lebih kuat mengatasi layar silau daripada Javascript
+            fps: 10,
+            useBarCodeDetectorIfSupported: true, 
             rememberLastUsedCamera: true,
+            formatsToSupport: [ 0, 3, 5 ], // HANYA QR (0), Code 39 (3), Code 128 (5). Menghemat 80% beban CPU!
             videoConstraints: {
-                facingMode: "environment", // Kamera belakang
-                width: { ideal: 1280 }, // Resolusi HD untuk ketajaman baca 1D Barcode
-                height: { ideal: 720 }
+                facingMode: "environment" // Hapus resolusi paksa (1280x720) agar webcam murah tidak pecah/blur akibat digital upscaling
             }
         },
         /* verbose= */ false
