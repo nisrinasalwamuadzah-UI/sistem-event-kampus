@@ -296,13 +296,16 @@ class ScannerApp {
             this.currentCameraId,
             {
                 fps: 20,
-                useBarCodeDetectorIfSupported: false, // MATIKAN NATIVE API, PAKSA PENGGUNAAN ZXING MURNI
-                disableFlip: false, // Bantu deteksi jika barcode terbalik
-                formatsToSupport: [0, 3], // 0 = QR, 3 = CODE_39 (Libre Barcode 39)
-                qrbox: (videoWidth, videoHeight) => {
-                    const width = Math.min(videoWidth * 0.9, 600);
-                    return { width: width, height: 250 };
+                useBarCodeDetectorIfSupported: false, // Wajib false untuk Windows
+                disableFlip: false,
+                // SOLUSI PAMUNGKAS: Paksa resolusi kamera ke VGA (640x480).
+                // Ini mencegah bug "Fat Bar" di mana ZXing gagal membaca garis yang terlalu tebal akibat kamera HD/1080p.
+                videoConstraints: {
+                    width: { ideal: 640 },
+                    height: { ideal: 480 }
                 }
+                // HAPUS qrbox: Anda bebas men-scan dari jarak mana saja.
+                // HAPUS formatsToSupport: Mendeteksi semua jenis barcode secara otomatis.
             },
             (decodedText) => this.onScanSuccess(decodedText),
             (errorMessage) => { /* Abaikan error tiap frame */ }
