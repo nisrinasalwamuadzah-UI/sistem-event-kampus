@@ -297,13 +297,11 @@ class ScannerApp {
             {
                 fps: 20,
                 useBarCodeDetectorIfSupported: true,
-                // SOLUSI BUG RESOLUSI TINGGI: Area fokus lebar (wide rectangle)
-                // Memotong background resolusi tinggi yang membuat ZXing kewalahan.
+                formatsToSupport: [0, 3], // 0 = QR, 3 = CODE_39 (Libre Barcode 39)
                 qrbox: (videoWidth, videoHeight) => {
                     const width = Math.min(videoWidth * 0.9, 600);
                     return { width: width, height: 250 };
                 }
-                // HAPUS formatsToSupport agar ZXing menebak semua format secara otomatis
             },
             (decodedText) => this.onScanSuccess(decodedText),
             (errorMessage) => { /* Abaikan error tiap frame */ }
