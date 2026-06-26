@@ -21,42 +21,48 @@ class KehadiranController extends Controller
             'event_id' => 'required|exists:events,id'
         ]);
 
-        $nim_input = trim($request->nim);
-        // Hapus semua karakter titik, spasi, atau strip dari input scanner
-        $clean_nim = str_replace(['.', ' ', '-'], '', $nim_input);
-        
-        // Cari mahasiswa dengan mengabaikan titik di database
-        $mhs = Mahasiswa::whereRaw("REPLACE(nim, '.', '') = ?", [$clean_nim])->first();
+        try {
+            $nim_input = trim($request->nim);
+            // Hapus semua karakter titik, spasi, atau strip dari input scanner
+            $clean_nim = str_replace(['.', ' ', '-'], '', $nim_input);
+            
+            // Cari mahasiswa dengan mengabaikan titik di database
+            $mhs = Mahasiswa::whereRaw("REPLACE(nim, '.', '') = ?", [$clean_nim])->first();
 
-        if (!$mhs) {
-            return back()->with('error', 'Mahasiswa tidak ditemukan di database kampus');
+            if (!$mhs) {
+                return back()->with('error', 'Mahasiswa tidak ditemukan di database kampus');
+            }
+
+            // Cek Eligibility (Apakah mahasiswa ini didaftarkan ke event ini?)
+            $isRegistered = \Illuminate\Support\Facades\DB::table('event_mahasiswa')
+                ->where('event_id', $request->event_id)
+                ->where('nim', $mhs->nim)
+                ->exists();
+
+            if (!$isRegistered) {
+                return back()->with('error', 'Akses Ditolak: Mahasiswa ini tidak terdaftar sebagai peserta event ini');
+            }
+
+            $exists = Kehadiran::where('nim', $mhs->nim)->where('event_id', $request->event_id)->exists();
+            if ($exists) {
+                return back()->with('error', 'Mahasiswa sudah absen untuk event ini');
+            }
+
+            Kehadiran::create([
+                'event_id' => $request->event_id,
+                'nim' => $mhs->nim,
+                'nama' => $mhs->nama,
+                'jurusan' => $mhs->jurusan,
+                'semester' => $mhs->semester,
+                'waktu_scan' => now(),
+            ]);
+
+            return back()->with('success', 'Absensi berhasil');
+
+        } catch (\Exception $e) {
+            // TANGKAP ERROR 500 SECARA MANUAL DAN TAMPILKAN KE LAYAR
+            return back()->with('error', 'CRITICAL ERROR: ' . $e->getMessage());
         }
-
-        // Cek Eligibility (Apakah mahasiswa ini didaftarkan ke event ini?)
-        $isRegistered = \Illuminate\Support\Facades\DB::table('event_mahasiswa')
-            ->where('event_id', $request->event_id)
-            ->where('nim', $mhs->nim)
-            ->exists();
-
-        if (!$isRegistered) {
-            return back()->with('error', 'Akses Ditolak: Mahasiswa ini tidak terdaftar sebagai peserta event ini');
-        }
-
-        $exists = Kehadiran::where('nim', $mhs->nim)->where('event_id', $request->event_id)->exists();
-        if ($exists) {
-            return back()->with('error', 'Mahasiswa sudah absen untuk event ini');
-        }
-
-        Kehadiran::create([
-            'event_id' => $request->event_id,
-            'nim' => $mhs->nim,
-            'nama' => $mhs->nama,
-            'jurusan' => $mhs->jurusan,
-            'semester' => $mhs->semester,
-            'waktu_scan' => now(),
-        ]);
-
-        return back()->with('success', 'Absensi berhasil');
     }
 
     public function exportPimpinan($event_id = null)
