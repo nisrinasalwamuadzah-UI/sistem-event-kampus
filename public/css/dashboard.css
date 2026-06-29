@@ -41,6 +41,18 @@ body {
     letter-spacing: -0.5px;
 }
 
+.brand-logo {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.brand span {
+    flex: 1;
+}
+
 .brand i {
     font-size: 24px;
     color: #93c5fd; /* Light Blue */

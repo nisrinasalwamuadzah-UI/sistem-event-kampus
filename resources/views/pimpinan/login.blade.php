@@ -114,11 +114,31 @@
         .back:hover {
             color: #ffffff;
         }
+
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .login-logo {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
     </style>
 </head>
 <body>
 
 <div class="card">
+    <div class="logo-container">
+        <img src="{{ asset('images/logo.png') }}" alt="Logo CampusEvent" class="login-logo">
+    </div>
     <h2>LOGIN PIMPINAN</h2>
     <form method="POST" action="{{ url('/pimpinan/login') }}">
         @csrf

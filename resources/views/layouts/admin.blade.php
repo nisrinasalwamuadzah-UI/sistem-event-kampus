@@ -18,8 +18,8 @@
     <!-- SIDEBAR / BOTTOM NAV -->
     <div class="sidebar">
         <div class="brand">
-            <i class="ph-fill ph-ticket"></i>
-            CampusEvent
+            <img src="{{ asset('images/logo.png') }}" alt="Logo CampusEvent" class="brand-logo">
+            <span>CampusEvent</span>
         </div>
 
         <div class="menu">
