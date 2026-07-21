@@ -202,7 +202,7 @@
         <tr>
             <td style="width: 100px; text-align: center;">
                 @php
-                    $imagePath = public_path('images/poltek-baja.png');
+                    $imagePath = public_path('images/logo.png');
                     $imageData = base64_encode(file_get_contents($imagePath));
                     $src = 'data:image/png;base64,'.$imageData;
                 @endphp
