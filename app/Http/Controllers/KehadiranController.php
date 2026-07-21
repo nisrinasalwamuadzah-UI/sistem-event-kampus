@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Mahasiswa;
 use App\Models\Kehadiran;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class KehadiranController extends Controller
 {
@@ -63,6 +66,39 @@ class KehadiranController extends Controller
             // TANGKAP ERROR 500 SECARA MANUAL DAN TAMPILKAN KE LAYAR
             return back()->with('error', 'CRITICAL ERROR: ' . $e->getMessage());
         }
+    }
+
+    public function exportPdf($eventId)
+    {
+        if (session('role') != 'admin') {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $event = \App\Models\Event::findOrFail($eventId);
+        $kehadirans = Kehadiran::where('event_id', $eventId)->latest('waktu_scan')->get();
+
+        $filename = 'Laporan_Kehadiran_' . Str::slug($event->nama_event, '_') . '_' . date('Ymd_His') . '.pdf';
+        $pdf = Pdf::loadView('admin.kehadiran_pdf', compact('event', 'kehadirans'));
+
+        return $pdf->download($filename);
+    }
+
+    public function savePdf($eventId)
+    {
+        if (session('role') != 'admin') {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $event = \App\Models\Event::findOrFail($eventId);
+        $kehadirans = Kehadiran::where('event_id', $eventId)->latest('waktu_scan')->get();
+
+        $filename = 'Laporan_Kehadiran_' . Str::slug($event->nama_event, '_') . '_' . date('Ymd_His') . '.pdf';
+        $pdf = Pdf::loadView('admin.kehadiran_pdf', compact('event', 'kehadirans'));
+
+        Storage::disk('public')->makeDirectory('kehadiran');
+        Storage::disk('public')->put('kehadiran/' . $filename, $pdf->output());
+
+        return back()->with('success', 'Laporan PDF berhasil disimpan.')->with('pdf_path', asset('storage/kehadiran/' . $filename));
     }
 
     public function exportPimpinan($event_id = null)

@@ -14,12 +14,28 @@
         }
 
         body {
-            background: #f5f7fb; /* clean campus background */
+            position: relative;
+            z-index: 0;
+            background: url('{{ asset('images/poltek-baja.png') }}') no-repeat center center scroll;
+            background-size: contain;
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-color: #0f172a;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
+            color: #fff;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(15, 23, 42, 0.42));
+            pointer-events: none;
+            z-index: 0;
         }
 
         /* MAIN CONTAINER */
@@ -28,10 +44,12 @@
             max-width: 900px;
             display: flex;
             flex-direction: row;
-            background: white;
+            background: rgba(255, 255, 255, 0.9);
             border-radius: 18px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.14);
+            position: relative;
+            z-index: 1;
         }
 
         /* LEFT SIDE (INFO) */

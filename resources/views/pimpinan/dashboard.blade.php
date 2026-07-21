@@ -16,7 +16,7 @@
 
     <!-- STATISTIK -->
     <div class="cards">
-        <div class="card">
+        <div class="card indigo">
             <div class="card-icon indigo"><i class="ph-fill ph-calendar-check"></i></div>
             <div class="card-info">
                 <h3>Total Event</h3>
@@ -24,7 +24,7 @@
             </div>
         </div>
 
-        <div class="card">
+        <div class="card green">
             <div class="card-icon green"><i class="ph-fill ph-check-circle"></i></div>
             <div class="card-info">
                 <h3>Total Kehadiran</h3>
@@ -32,8 +32,8 @@
             </div>
         </div>
 
-        <div class="card">
-            <div class="card-icon blue"><i class="ph-fill ph-users"></i></div>
+        <div class="card green">
+            <div class="card-icon green"><i class="ph-fill ph-users"></i></div>
             <div class="card-info">
                 <h3>Total Mahasiswa</h3>
                 <p>{{ \App\Models\Mahasiswa::count() }}</p>

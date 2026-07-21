@@ -178,10 +178,29 @@ Route::get('/admin/kehadiran', function () {
         return redirect('/admin/login');
     }
 
-    $kehadirans = \App\Models\Kehadiran::latest()->get();
+    $events = \App\Models\Event::withCount('kehadirans')->latest()->get();
 
-    return view('admin.kehadiran', compact('kehadirans'));
+    return view('admin.kehadiran', compact('events'));
 });
+
+Route::get('/admin/kehadiran/{id}/export-pdf', [KehadiranController::class, 'exportPdf']);
+Route::get('/admin/kehadiran/{id}/save-pdf', [KehadiranController::class, 'savePdf']);
+
+Route::get('/admin/kehadiran/{id}', function ($id) {
+
+    if (Session::get('role') != 'admin') {
+        return redirect('/admin/login');
+    }
+
+    $event = \App\Models\Event::findOrFail($id);
+    $kehadirans = $event->kehadirans()->latest()->get();
+    $totalRegistered = \Illuminate\Support\Facades\DB::table('event_mahasiswa')->where('event_id', $id)->count();
+    $presentCount = $kehadirans->count();
+    $absentCount = max($totalRegistered - $presentCount, 0);
+
+    return view('admin.kehadiran', compact('event', 'kehadirans', 'totalRegistered', 'presentCount', 'absentCount'));
+});
+
 /*
 |--------------------------------------------------------------------------
 | SCAN ABSENSI BARU

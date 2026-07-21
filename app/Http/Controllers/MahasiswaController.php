@@ -11,8 +11,30 @@ class MahasiswaController extends Controller
     {
         $query = Mahasiswa::query();
 
-        // Filter Angkatan
+        $eventId = $request->get('event_id');
         $angkatan = $request->get('angkatan');
+
+        if (!$eventId) {
+            $latestEvent = \App\Models\Event::latest()->first();
+            if ($latestEvent) {
+                $eventId = $latestEvent->id;
+            }
+        }
+
+        if ($eventId) {
+            $registeredNims = \Illuminate\Support\Facades\DB::table('event_mahasiswa')
+                ->where('event_id', $eventId)
+                ->pluck('nim')
+                ->toArray();
+
+            if (!empty($registeredNims)) {
+                $query->whereIn('nim', $registeredNims);
+            } else {
+                $query->whereRaw('1 = 0');
+            }
+        }
+
+        // Filter Angkatan
         if ($angkatan) {
             // Asumsi: 2 digit pertama NIM adalah angkatan, misal: 23190012 -> Angkatan 23
             $prefix = substr($angkatan, -2); // Ambil '23' dari '2023'
@@ -29,6 +51,8 @@ class MahasiswaController extends Controller
         }
 
         $mahasiswas = $query->get();
+
+        $events = \App\Models\Event::latest()->get();
 
         // Get unique cohort prefixes for the dropdown filter dynamically
         $allNims = Mahasiswa::select('nim')->pluck('nim');
@@ -50,7 +74,7 @@ class MahasiswaController extends Controller
         }
         arsort($angkatans);
 
-        return view('admin.mahasiswa.index', compact('mahasiswas', 'angkatans', 'angkatan'));
+        return view('admin.mahasiswa.index', compact('mahasiswas', 'angkatans', 'angkatan', 'events', 'eventId'));
     }
 
     public function import(Request $request)
