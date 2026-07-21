@@ -522,6 +522,23 @@ tr:hover td {
     background: #f8fafc;
 }
 
+/* TABLET & SMALL DESKTOP (Max 1024px) */
+@media (max-width: 1024px) {
+    .sidebar {
+        width: 220px;
+        padding: 20px 16px;
+    }
+    .main-wrapper {
+        margin-left: 220px;
+    }
+    .main-content {
+        padding: 24px;
+    }
+    .cards {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+}
+
 /* MOBILE APP-LIKE BOTTOM NAV */
 @media (max-width: 768px) {
     body {
@@ -530,15 +547,21 @@ tr:hover td {
 
     .main-wrapper {
         margin-left: 0;
-        padding-bottom: 70px;
+        padding-bottom: 80px; /* give more space for bottom nav */
     }
 
     .topbar {
-        padding: 16px 20px;
+        padding: 12px 16px;
     }
 
     .main-content {
-        padding: 20px;
+        padding: 16px;
+    }
+    
+    .header-section {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
     }
 
     .sidebar {
@@ -602,9 +625,19 @@ tr:hover td {
 
     .table-container {
         overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    table {
+        min-width: 600px; /* force scroll if screen is too narrow */
+    }
+    
+    th, td {
+        white-space: nowrap; /* prevent text from wrapping and breaking height */
     }
     
     #reader {
         width: 100% !important;
     }
 }
+
