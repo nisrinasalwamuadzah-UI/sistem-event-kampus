@@ -16,10 +16,6 @@
             font-family: 'Outfit', sans-serif;
             position: relative;
             z-index: 0;
-            background: url('{{ asset('images/poltek-baja.png') }}') no-repeat center center scroll;
-            background-size: contain;
-            background-position: center center;
-            background-repeat: no-repeat;
             background-color: #0f172a;
             min-height: 100vh;
             display: flex;
@@ -29,19 +25,11 @@
             color: #fff;
         }
 
-        body::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(15, 23, 42, 0.42));
-            pointer-events: none;
-            z-index: 0;
-        }
-
         .card {
             width: 100%;
             max-width: 400px;
-            background: rgba(255, 255, 255, 0.05);
+            background: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.85)), url('{{ asset('images/poltek-baja.png') }}') no-repeat center center;
+            background-size: cover;
             backdrop-filter: blur(15px);
             -webkit-backdrop-filter: blur(15px);
             padding: 40px 30px;
@@ -50,6 +38,8 @@
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             text-align: center;
             animation: fadeIn 0.6s ease-out;
+            position: relative;
+            overflow: hidden;
         }
 
         @keyframes fadeIn {
