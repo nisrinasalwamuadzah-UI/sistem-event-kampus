@@ -9,7 +9,7 @@
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
     <!-- Unified CSS -->
-    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}?v=6">
+    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}?v=7">
     
     @yield('extra_css')
 </head>
