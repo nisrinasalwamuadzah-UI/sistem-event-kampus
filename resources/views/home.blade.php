@@ -16,13 +16,23 @@
         body {
             position: relative;
             z-index: 0;
-            background: linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.4)), url('{{ asset('images/bg-poltekbaja-landscape.jpg') }}') no-repeat center center fixed;
-            background-size: cover;
+            background-color: #ffffff;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: -30px; /* Prevent blur white edges */
+            background: url('{{ asset('images/bg-poltekbaja-landscape.jpg') }}') no-repeat center center;
+            background-size: cover;
+            filter: blur(12px);
+            opacity: 0.45; /* 45% visibility of the image on white background */
+            z-index: -1;
         }
 
         /* MAIN CONTAINER */
