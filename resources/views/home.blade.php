@@ -16,7 +16,7 @@
         body {
             position: relative;
             z-index: 0;
-            background: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)), url('{{ asset('images/bg-poltekbaja-landscape.jpg') }}') no-repeat center center fixed;
+            background: linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.4)), url('{{ asset('images/bg-poltekbaja-landscape.jpg') }}') no-repeat center center fixed;
             background-size: cover;
             min-height: 100vh;
             display: flex;
