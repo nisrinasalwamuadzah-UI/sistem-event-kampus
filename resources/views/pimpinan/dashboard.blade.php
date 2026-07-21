@@ -69,17 +69,17 @@
                 <div class="event-actions">
                     @if($event->status == 'Aktif')
                         <span class="badge aktif">Aktif</span>
-                        <a href="{{ url('/pimpinan/event/finish/'.$event->id) }}" 
-                           onclick="return confirm('Apakah Anda yakin ingin mengakhiri event ini? Absensi akan ditutup.')" 
-                           class="btn btn-sm btn-danger" style="margin-left: auto;">
-                            <i class="ph-bold ph-stop-circle"></i> Akhiri Event
-                        </a>
                     @else
                         <span class="badge selesai">Telah Selesai</span>
-                        <a href="{{ url('/pimpinan/export/kehadiran/'.$event->id) }}" class="btn btn-sm btn-secondary" style="margin-left: auto; border-color: #10b981; color: #10b981;">
-                            <i class="ph-bold ph-file-csv"></i> Unduh Data
-                        </a>
                     @endif
+                    <div style="display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap;">
+                        <a href="{{ url('/pimpinan/export/kehadiran/'.$event->id) }}" class="btn btn-sm btn-secondary" style="border-color: #10b981; color: #10b981;">
+                            <i class="ph-bold ph-file-csv"></i> Unduh CSV
+                        </a>
+                        <a href="{{ url('/pimpinan/kehadiran/'.$event->id.'/export-pdf') }}" class="btn btn-sm btn-danger" style="border-color: #ef4444; color: #ef4444; background: transparent;">
+                            <i class="ph-bold ph-file-pdf"></i> Unduh PDF
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

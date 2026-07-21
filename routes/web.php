@@ -142,14 +142,16 @@ Route::get('/pimpinan/dashboard', function () {
 |--------------------------------------------------------------------------
 */
 
-Route::get('/pimpinan/event/finish/{id}', function ($id) {
-    $event = \App\Models\Event::find($id);
+Route::get('/admin/event/finish/{id}', function ($id) {
+    if (Session::get('role') != 'admin') return redirect('/admin/login');
+    $event = \App\Models\Event::findOrFail($id);
     $event->status = 'Selesai';
     $event->save();
-    return redirect('/pimpinan/dashboard');
+    return back()->with('success', 'Event berhasil diakhiri.');
 });
 
 Route::get('/pimpinan/export/kehadiran/{event_id?}', [KehadiranController::class, 'exportPimpinan']);
+Route::get('/pimpinan/kehadiran/{id}/export-pdf', [KehadiranController::class, 'exportPdf']);
 
 /*
 |--------------------------------------------------------------------------

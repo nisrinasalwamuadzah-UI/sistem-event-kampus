@@ -70,7 +70,7 @@ class KehadiranController extends Controller
 
     public function exportPdf($eventId)
     {
-        if (session('role') != 'admin') {
+        if (!in_array(session('role'), ['admin', 'pimpinan'])) {
             abort(403, 'Unauthorized action.');
         }
 

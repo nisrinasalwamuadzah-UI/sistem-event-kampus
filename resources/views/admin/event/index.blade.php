@@ -32,10 +32,17 @@
                 </div>
 
                 <div class="event-actions">
-                    <a href="{{ url('/admin/event/'.$event->id.'/peserta') }}" class="btn btn-sm btn-primary" style="flex: 1; margin-bottom: 8px; width: 100%;">
-                        <i class="ph-bold ph-users"></i> Daftar Mahasiswa
-                    </a>
-                    <div style="display: flex; gap: 8px;">
+                    <div style="display: flex; gap: 8px; margin-bottom: 8px; width: 100%;">
+                        <a href="{{ url('/admin/event/'.$event->id.'/peserta') }}" class="btn btn-sm btn-primary" style="flex: 1;">
+                            <i class="ph-bold ph-users"></i> Peserta
+                        </a>
+                        @if($event->status == 'Aktif')
+                        <a href="{{ url('/admin/event/finish/'.$event->id) }}" onclick="return confirm('Akhiri event ini?')" class="btn btn-sm btn-warning" style="flex: 1; background: #f59e0b; color: white; border: none;">
+                            <i class="ph-bold ph-stop-circle"></i> Akhiri
+                        </a>
+                        @endif
+                    </div>
+                    <div style="display: flex; gap: 8px; width: 100%;">
                         <a href="{{ url('/admin/event/edit/'.$event->id) }}" class="btn btn-sm btn-secondary" style="flex: 1;">
                             <i class="ph-bold ph-pencil-simple"></i> Edit
                         </a>
