@@ -60,7 +60,7 @@ body {
 
 .brand i {
     font-size: 24px;
-    color: #6366f1; /* Indigo Accent */
+    color: #60a5fa; /* Light Blue Accent */
 }
 
 .menu {
@@ -98,10 +98,10 @@ body {
 }
 
 .menu a.active {
-    background: #4f46e5; /* Indigo 600 */
+    background: #2563eb; /* Vibrant Blue */
     color: #ffffff;
     font-weight: 600;
-    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
 }
 
 .logout {
@@ -645,7 +645,7 @@ tr:hover td {
     }
     
     .sidebar .menu a.active i {
-        color: #4f46e5;
+        color: #60a5fa; /* Light Blue for mobile contrast */
     }
 
     .sidebar .logout {
