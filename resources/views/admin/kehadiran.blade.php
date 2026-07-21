@@ -53,10 +53,10 @@
             </div>
         </div>
 
-        <div style="background: white; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.05); padding: 24px; margin-bottom: 32px;">
-            <h3 style="margin-bottom: 16px;">Diagram Kehadiran</h3>
-            <div style="max-width: 520px; margin: 0 auto;">
-                <canvas id="attendanceChart" width="400" height="400"></canvas>
+        <div style="background: white; border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.03); padding: 32px; margin-bottom: 32px; display: flex; flex-direction: column; align-items: center;">
+            <h3 style="margin-bottom: 24px; color: #0f172a; font-size: 18px; font-weight: 600;">Diagram Kehadiran</h3>
+            <div style="width: 100%; max-width: 400px; height: 280px; position: relative;">
+                <canvas id="attendanceChart"></canvas>
             </div>
         </div>
 
@@ -146,14 +146,16 @@
                 labels: ['Hadir', 'Tidak Hadir'],
                 datasets: [{
                     data: [presentCount, absentCount],
-                    backgroundColor: ['#22c55e', '#f97316'],
+                    backgroundColor: ['#10B981', '#cbd5e1'], /* Emerald for Present, Light Slate for Absent */
                     borderColor: ['#ffffff', '#ffffff'],
-                    borderWidth: 2,
+                    borderWidth: 4, /* Thicker border for a modern donut slice separation */
+                    hoverOffset: 4,
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                cutout: '70%', /* Thinner donut ring */
                 plugins: {
                     legend: {
                         position: 'bottom',
