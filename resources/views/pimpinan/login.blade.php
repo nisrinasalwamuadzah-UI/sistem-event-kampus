@@ -16,13 +16,13 @@
             font-family: 'Outfit', sans-serif;
             position: relative;
             z-index: 0;
-            background-color: #0f172a;
+            background: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)), url('{{ asset('images/bg-poltekbaja-landscape.jpg') }}') no-repeat center center fixed;
+            background-size: cover;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             padding: 20px;
-            color: #fff;
         }
 
         .card {
