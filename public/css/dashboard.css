@@ -292,10 +292,11 @@ body {
 
 .event-card img {
     width: 100%;
-    height: 240px;
-    object-fit: contain;
-    background: #ffffff;
-    padding: 16px;
+    height: auto; /* Fleksibel mengikuti rasio asli gambar */
+    max-height: 350px; /* Batas maksimal agar tidak terlalu menjuntai ke bawah */
+    object-fit: contain; /* Memastikan seluruh bagian gambar terlihat jika menyentuh max-height */
+    background: #f8fafc;
+    display: block;
     border-bottom: 1px solid #f1f5f9;
 }
 
