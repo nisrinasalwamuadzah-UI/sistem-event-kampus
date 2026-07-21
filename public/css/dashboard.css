@@ -334,6 +334,7 @@ body {
 .event-actions {
     margin-top: 24px;
     display: flex;
+    flex-wrap: wrap; /* Fix buttons crushing each other */
     gap: 12px;
     align-items: center;
     padding-top: 16px;
@@ -561,7 +562,38 @@ tr:hover td {
     .header-section {
         display: flex;
         flex-direction: column;
-        gap: 12px;
+        gap: 16px;
+        align-items: stretch !important;
+    }
+    
+    .header-section > div {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        gap: 8px !important;
+        align-items: stretch !important;
+    }
+
+    .btn {
+        padding: 10px 14px;
+        font-size: 13px;
+    }
+
+    .header-section .btn, .event-actions .btn, .form-actions .btn {
+        width: 100%;
+        justify-content: center;
+        margin-left: 0 !important;
+    }
+
+    .event-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+    
+    .event-actions > div {
+        flex-direction: column;
+        width: 100%;
     }
 
     .sidebar {
