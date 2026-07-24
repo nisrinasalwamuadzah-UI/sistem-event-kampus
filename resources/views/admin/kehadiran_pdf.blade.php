@@ -17,9 +17,8 @@
     /* ── Kop Surat ── */
     .kop {
       width: 100%;
-      border-bottom: 3px solid #0F172A;
       margin-bottom: 2px;
-      padding-bottom: 10px;
+      padding-bottom: 5px;
     }
     
     .kop-table {
@@ -33,6 +32,7 @@
     .kop-logo {
       width: 80px;
       height: 80px;
+      object-fit: contain;
     }
 
     .kop-text {
@@ -40,9 +40,9 @@
     }
 
     .kop-yayasan {
-      font-size: 12pt;
+      font-size: 11pt;
       font-weight: bold;
-      color: #334155;
+      color: #000;
       letter-spacing: 0.5px;
       line-height: 1.2;
     }
@@ -50,23 +50,31 @@
     .kop-nama {
       font-size: 18pt;
       font-weight: bold;
-      color: #0F172A;
+      color: #000;
       letter-spacing: 1px;
       line-height: 1.2;
       margin-top: 2px;
     }
+    
+    .kop-akreditasi {
+      font-size: 10pt;
+      font-weight: bold;
+      color: #000;
+      margin-top: 2px;
+      line-height: 1.2;
+    }
 
     .kop-alamat {
       font-size: 9pt;
-      color: #475569;
+      color: #000;
       margin-top: 5px;
       line-height: 1.4;
     }
 
     /* ── Garis Pemisah Ganda ── */
-    .line-tipis {
+    .line-tebal {
       border: none;
-      border-top: 1px solid #0F172A;
+      border-top: 2px solid #000;
       margin-bottom: 20px;
     }
 
@@ -104,29 +112,6 @@
     }
 
     /* STATISTIK */
-    .summary {
-        width: 100%;
-        margin-bottom: 20px;
-        border-collapse: collapse;
-    }
-    .summary td {
-        width: 33.33%;
-        padding: 10px;
-        text-align: center;
-        border: 1px solid #ddd;
-        background: #f8fafc;
-    }
-    .summary-label {
-        font-size: 9pt;
-        font-weight: bold;
-        display: block;
-        margin-bottom: 5px;
-    }
-    .summary-value {
-        font-size: 14pt;
-        font-weight: bold;
-        color: #0F172A;
-    }
 
     /* TABEL PESERTA */
     .data-table {
@@ -203,23 +188,40 @@
             <td style="width: 100px; text-align: center;">
                 @php
                     $imagePath = public_path('images/logo.png');
-                    $imageData = base64_encode(file_get_contents($imagePath));
-                    $src = 'data:image/png;base64,'.$imageData;
+                    $src = '';
+                    if(file_exists($imagePath)) {
+                        $src = 'data:image/png;base64,'.base64_encode(file_get_contents($imagePath));
+                    }
                 @endphp
+                @if($src)
                 <img class="kop-logo" src="{{ $src }}" alt="Logo Politeknik Baja Tegal" />
+                @endif
             </td>
             <td class="kop-text">
                 <div class="kop-yayasan">YAYASAN PENDIDIKAN BHAKTI PRAJA TEGAL</div>
                 <div class="kop-nama">POLITEKNIK BAJA TEGAL</div>
+                <div class="kop-akreditasi">TERAKREDITASI "BAIK" NO. 341/SK/BAN-PT/Akred/PT/VII/2022</div>
                 <div class="kop-alamat">
-                    Jl. Raya Slawi – Jatibarang Km. 4 Dukuhwaru, Kab. Tegal, Jawa Tengah 52472<br />
-                    Telp: (0283) 6196309 / 082325580008 | Website: www.pbjt.ac.id | Email: info@pbjt.ac.id
+                    Alamat : Jl. Raya Barat Dukuhwaru, Slawi-Jatibarang Km. 7, Kab. Tegal<br />
+                    Telp. (0283) 6196309 - Website : www.pbjt.ac.id - E-mail : info@pbjt.ac.id
                 </div>
+            </td>
+            <td style="width: 100px; text-align: center;">
+                @php
+                    $banPtPath = public_path('images/ban-pt.png');
+                    $banPtSrc = '';
+                    if(file_exists($banPtPath)) {
+                        $banPtSrc = 'data:image/png;base64,'.base64_encode(file_get_contents($banPtPath));
+                    }
+                @endphp
+                @if($banPtSrc)
+                <img class="kop-logo" src="{{ $banPtSrc }}" alt="Logo BAN-PT" />
+                @endif
             </td>
         </tr>
     </table>
   </div>
-  <hr class="line-tipis" />
+  <hr class="line-tebal" />
 
   <!-- BODY SURAT -->
   <div class="surat-body">
@@ -250,22 +252,25 @@
       </div>
 
       <!-- STATISTIK KEHADIRAN -->
-      <table class="summary">
-          <tr>
-              <td>
-                  <span class="summary-label">Total Peserta Terdaftar</span>
-                  <span class="summary-value">{{ \Illuminate\Support\Facades\DB::table('event_mahasiswa')->where('event_id', $event->id)->count() }}</span>
-              </td>
-              <td>
-                  <span class="summary-label">Total Hadir</span>
-                  <span class="summary-value">{{ $kehadirans->count() }}</span>
-              </td>
-              <td>
-                  <span class="summary-label">Persentase Kehadiran</span>
-                  <span class="summary-value">{{ $kehadirans->count() > 0 ? round(($kehadirans->count() / max(1, \Illuminate\Support\Facades\DB::table('event_mahasiswa')->where('event_id', $event->id)->count())) * 100) : 0 }}%</span>
-              </td>
-          </tr>
-      </table>
+      <div class="details" style="margin-top: 15px; margin-bottom: 25px;">
+          <table>
+              <tr>
+                  <td class="label" style="width: 180px;">Total Peserta Terdaftar</td>
+                  <td style="width: 10px;">:</td>
+                  <td>{{ \Illuminate\Support\Facades\DB::table('event_mahasiswa')->where('event_id', $event->id)->count() }}</td>
+              </tr>
+              <tr>
+                  <td class="label">Total Hadir</td>
+                  <td>:</td>
+                  <td>{{ $kehadirans->count() }}</td>
+              </tr>
+              <tr>
+                  <td class="label">Persentase Kehadiran</td>
+                  <td>:</td>
+                  <td>{{ $kehadirans->count() > 0 ? round(($kehadirans->count() / max(1, \Illuminate\Support\Facades\DB::table('event_mahasiswa')->where('event_id', $event->id)->count())) * 100) : 0 }}%</td>
+              </tr>
+          </table>
+      </div>
 
       <!-- TABEL PESERTA -->
       <table class="data-table">
