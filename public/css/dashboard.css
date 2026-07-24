@@ -618,26 +618,38 @@ tr:hover td {
     .sidebar .brand { display: none; }
     
     .sidebar .menu {
+        display: flex;
         flex-direction: row;
-        justify-content: space-around;
+        justify-content: space-between;
+        align-items: stretch;
         gap: 0;
         width: 100%;
     }
 
     .sidebar .menu a {
+        flex: 1; /* Membagi ruang secara proporsional merata (20% untuk 5 item) */
+        display: flex;
         flex-direction: column;
+        align-items: center;
+        justify-content: flex-start; /* Sejajarkan dari atas agar ikon selalu sejajar */
         gap: 4px;
-        padding: 8px 4px;
+        padding: 8px 2px;
         color: #64748b;
-        font-size: 11px;
+        font-size: 10px; /* Ukuran font yang aman */
         font-weight: 500;
         background: transparent !important;
         box-shadow: none !important;
         border-radius: 0;
+        text-align: center;
+        line-height: 1.1;
+        min-width: 0; /* Kunci rahasia agar flexbox tidak meluber saat teks panjang */
+        white-space: normal; /* Izinkan teks melipat ke bawah (wrap) */
+        word-wrap: break-word;
     }
 
     .sidebar .menu a i {
         font-size: 22px;
+        margin-bottom: 2px;
     }
 
     .sidebar .menu a.active {
