@@ -605,13 +605,13 @@ tr:hover td {
         width: 100%;
         min-height: auto;
         padding: 8px 12px;
-        background: #1e3a8a; /* Match blue theme on mobile bottom nav */
-        border-top: none;
+        background: #ffffff; /* White background for clean look */
+        border-top: 1px solid #f1f5f9;
         flex-direction: row;
         align-items: center;
         justify-content: space-between;
         z-index: 1000;
-        box-shadow: 0 -10px 20px rgba(0,0,0,0.1);
+        box-shadow: 0 -10px 20px rgba(0,0,0,0.05);
         border-radius: 20px 20px 0 0;
     }
 
@@ -641,11 +641,11 @@ tr:hover td {
     }
 
     .sidebar .menu a.active {
-        color: #ffffff;
+        color: #2563eb; /* Vibrant blue text */
     }
     
     .sidebar .menu a.active i {
-        color: #60a5fa; /* Light Blue for mobile contrast */
+        color: #2563eb; /* Vibrant blue icon */
     }
 
     .sidebar .logout {

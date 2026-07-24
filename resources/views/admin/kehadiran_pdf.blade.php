@@ -30,9 +30,9 @@
     }
 
     .kop-logo {
-      width: 80px;
       height: 80px;
-      object-fit: contain;
+      width: auto;
+      max-width: 100px;
     }
 
     .kop-text {
@@ -176,7 +176,7 @@
         padding-top: 5px;
     }
 
-    @page { margin: 30px 40px 40px 40px; }
+    @page { margin: 50px 40px 40px 40px; }
   </style>
 </head>
 <body>
