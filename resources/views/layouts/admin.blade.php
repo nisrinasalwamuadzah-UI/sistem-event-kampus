@@ -11,6 +11,11 @@
     <!-- Unified CSS -->
     <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}?v=9">
     
+    <!-- PWA Settings -->
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="apple-touch-icon" href="{{ asset('images/logo.png') }}">
+    
     @yield('extra_css')
 </head>
 <body>
@@ -103,5 +108,14 @@
     </script>
 
     @yield('extra_js')
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js');
+            });
+        }
+    </script>
 </body>
 </html>

@@ -148,6 +148,11 @@
             -webkit-backdrop-filter: blur(10px);
         }
     </style>
+    
+    <!-- PWA Settings -->
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="apple-touch-icon" href="{{ asset('images/logo.png') }}">
 </head>
 <body>
 
@@ -169,5 +174,13 @@
     <a class="back" href="{{ url('/') }}">← Kembali ke Beranda</a>
 </div>
 
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js');
+            });
+        }
+    </script>
 </body>
 </html>

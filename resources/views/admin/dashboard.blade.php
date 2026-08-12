@@ -5,7 +5,7 @@
 @section('content')
 
     <div class="header-section">
-        <h2>Dashboard Event Kampus</h2>
+        <h2>Dashboard Kegiatan Kampus PBJT</h2>
         <p>Sistem Informasi Kegiatan Kampus</p>
     </div>
 
