@@ -8,6 +8,9 @@
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
     <!-- Unified CSS -->
     <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}?v=9">
     

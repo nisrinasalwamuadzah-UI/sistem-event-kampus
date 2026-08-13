@@ -24,9 +24,9 @@ self.addEventListener('fetch', event => {
           return response;
         }
         return fetch(event.request).then(
-          function(response) {
+          function (response) {
             // Check if we received a valid response
-            if(!response || response.status !== 200 || response.type !== 'basic') {
+            if (!response || response.status !== 200 || response.type !== 'basic') {
               return response;
             }
 
@@ -37,10 +37,10 @@ self.addEventListener('fetch', event => {
             var responseToCache = response.clone();
 
             caches.open(CACHE_NAME)
-              .then(function(cache) {
+              .then(function (cache) {
                 // Ignore non-GET requests when caching
                 if (event.request.method === 'GET') {
-                    cache.put(event.request, responseToCache);
+                  cache.put(event.request, responseToCache);
                 }
               });
 

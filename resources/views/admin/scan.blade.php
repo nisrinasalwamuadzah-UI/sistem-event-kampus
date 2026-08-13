@@ -11,16 +11,7 @@
 
     <div class="form-container" style="max-width: 600px; margin: 0 auto;">
 
-        @if(session('success'))
-            <div style="background: #ecfdf5; color: #059669; padding: 16px; border-radius: 12px; border: 1px solid #a7f3d0; margin-bottom: 24px; font-size: 14px; display: flex; align-items: center; gap: 8px;">
-                <i class="ph-bold ph-check-circle" style="font-size: 20px;"></i> {{ session('success') }}
-            </div>
-        @endif
-        @if(session('error'))
-            <div style="background: #fef2f2; color: #dc2626; padding: 16px; border-radius: 12px; border: 1px solid #fecaca; margin-bottom: 24px; font-size: 14px; display: flex; align-items: center; gap: 8px;">
-                <i class="ph-bold ph-warning" style="font-size: 20px;"></i> {{ session('error') }}
-            </div>
-        @endif
+
 
         <form action="{{ url('/admin/scan') }}" method="POST" id="scanForm">
             @csrf
@@ -109,6 +100,7 @@
 /* Quagga2 Inject Styles */
 #barcode-reader video { width: 100% !important; object-fit: cover; }
 #barcode-reader canvas.drawing, #barcode-reader canvas.drawingBuffer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+
 </style>
 
 <!-- Load Both Engines -->
@@ -117,6 +109,34 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
+
+    // SweetAlert2 Toast Configuration
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        didOpen: (toast) => {
+            toast.addEventListener('mouseenter', Swal.stopTimer)
+            toast.addEventListener('mouseleave', Swal.resumeTimer)
+        }
+    });
+
+    @if(session('success'))
+        Toast.fire({
+            icon: 'success',
+            title: '{{ session("success") }}'
+        });
+    @endif
+
+    @if(session('error'))
+        Toast.fire({
+            icon: 'error',
+            title: '{{ session("error") }}'
+        });
+    @endif
+
     let currentMode = 'barcode'; // Tab aktif saat ini
     let html5QrcodeScanner = null;
     let isProcessing = false; // Mencegah multiple submit
