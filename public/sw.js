@@ -1,4 +1,4 @@
-const CACHE_NAME = 'campusevent-cache-v1';
+const CACHE_NAME = 'campusevent-cache-v2';
 const urlsToCache = [
   '/',
   '/css/dashboard.css',
@@ -16,35 +16,37 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
+  // Hanya tangani GET requests
+  if (event.request.method !== 'GET') return;
+
+  // STRATEGI 1: Network First untuk halaman HTML (Navigasi)
+  // Mencegah masalah cache pada halaman dinamis yang memiliki notifikasi Session (Flash Message)
+  if (event.request.mode === 'navigate' || event.request.headers.get('accept').includes('text/html')) {
+    event.respondWith(
+      fetch(event.request)
+        .catch(() => caches.match('/')) // Fallback offline
+    );
+    return;
+  }
+
+  // STRATEGI 2: Cache First untuk aset statis (CSS, Images, JS)
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        // Cache hit - return response
         if (response) {
-          return response;
+          return response; // Return dari Cache
         }
         return fetch(event.request).then(
-          function (response) {
-            // Check if we received a valid response
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
+          function (networkResponse) {
+            if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+              return networkResponse;
             }
-
-            // IMPORTANT: Clone the response. A response is a stream
-            // and because we want the browser to consume the response
-            // as well as the cache consuming the response, we need
-            // to clone it so we have two streams.
-            var responseToCache = response.clone();
-
+            var responseToCache = networkResponse.clone();
             caches.open(CACHE_NAME)
               .then(function (cache) {
-                // Ignore non-GET requests when caching
-                if (event.request.method === 'GET') {
-                  cache.put(event.request, responseToCache);
-                }
+                cache.put(event.request, responseToCache);
               });
-
-            return response;
+            return networkResponse;
           }
         );
       })
@@ -58,10 +60,11 @@ self.addEventListener('activate', event => {
       return Promise.all(
         cacheNames.map(cacheName => {
           if (cacheWhitelist.indexOf(cacheName) === -1) {
-            return caches.delete(cacheName);
+            return caches.delete(cacheName); // Hapus cache versi lama (v1)
           }
         })
       );
     })
   );
+  return self.clients.claim(); // Memaksa SW baru segera mengambil alih
 });
