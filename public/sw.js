@@ -1,4 +1,4 @@
-const CACHE_NAME = 'campusevent-cache-v2';
+const CACHE_NAME = 'campusevent-cache-v3';
 const urlsToCache = [
   '/',
   '/css/dashboard.css',
@@ -67,4 +67,11 @@ self.addEventListener('activate', event => {
     })
   );
   return self.clients.claim(); // Memaksa SW baru segera mengambil alih
+});
+
+// Menangkap perintah untuk SKIP_WAITING dari UI
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });

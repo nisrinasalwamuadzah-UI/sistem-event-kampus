@@ -174,14 +174,7 @@
     <a class="back" href="{{ url('/') }}">← Kembali ke Beranda</a>
 </div>
 
-    <!-- Service Worker Registration -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js');
-            });
-        }
-    </script>
+
     <!-- Custom PWA Install Prompt -->
     @include('components.pwa-install')
 </body>

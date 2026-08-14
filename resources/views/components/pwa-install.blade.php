@@ -84,6 +84,12 @@
     box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
 }
 
+.pwa-btn-update {
+    background: #10b981;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
 /* iOS Specific Instructions */
 .pwa-ios-instructions {
     display: none;
@@ -104,6 +110,7 @@
 }
 </style>
 
+<!-- Install Prompt -->
 <div id="pwaInstallPrompt" class="pwa-bottom-sheet">
     <div class="pwa-header">
         <img src="{{ asset('images/logo.png') }}" alt="Logo Event" class="pwa-logo">
@@ -125,84 +132,124 @@
     </div>
 </div>
 
+<!-- Update Prompt -->
+<div id="pwaUpdatePrompt" class="pwa-bottom-sheet">
+    <div class="pwa-header">
+        <div style="background: #ecfdf5; padding: 10px; border-radius: 12px; margin-right: 12px;">
+            <i class="ph-bold ph-arrows-clockwise" style="font-size: 32px; color: #10b981;"></i>
+        </div>
+        <div class="pwa-text-content">
+            <h4 class="pwa-title">Versi Baru Tersedia!</h4>
+            <p class="pwa-desc">Sistem Event telah diperbarui. Segarkan aplikasi sekarang untuk mendapatkan fitur terbaru.</p>
+        </div>
+    </div>
+    <div class="pwa-actions">
+        <button id="pwaBtnUpdate" class="pwa-btn pwa-btn-update">Segarkan Sekarang</button>
+    </div>
+</div>
+
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     let deferredPrompt;
+    let newWorker;
+    
     const pwaPrompt = document.getElementById('pwaInstallPrompt');
     const btnInstall = document.getElementById('pwaBtnInstall');
     const btnLater = document.getElementById('pwaBtnLater');
     const iosInstruction = document.getElementById('iosInstruction');
     
-    // Mengecek status Do Not Disturb di localStorage
+    const updatePrompt = document.getElementById('pwaUpdatePrompt');
+    const btnUpdate = document.getElementById('pwaBtnUpdate');
+    
+    // --- 1. SERVICE WORKER REGISTRATION & UPDATE DETECTOR ---
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js').then(reg => {
+                // Deteksi jika ada pembaruan service worker yang ditemukan
+                reg.addEventListener('updatefound', () => {
+                    newWorker = reg.installing;
+                    newWorker.addEventListener('statechange', () => {
+                        // Jika SW baru sudah selesai diunduh dan menunggu diaktifkan
+                        if (newWorker.state === 'installed') {
+                            if (navigator.serviceWorker.controller) {
+                                // Ini adalah update (bukan install pertama kali)
+                                updatePrompt.classList.add('show');
+                            }
+                        }
+                    });
+                });
+            });
+            
+            // Ketika SW baru memaksa mengambil alih, otomatis reload halaman
+            let refreshing;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (refreshing) return;
+                refreshing = true;
+                window.location.reload();
+            });
+        });
+    }
+
+    // Tombol Update ditekan
+    btnUpdate.addEventListener('click', () => {
+        if (newWorker) {
+            updatePrompt.classList.remove('show');
+            // Kirim pesan ke SW baru untuk skipWaiting
+            newWorker.postMessage({ type: 'SKIP_WAITING' });
+        }
+    });
+
+
+    // --- 2. INSTALL PROMPT LOGIC ---
     const pwaDismissed = localStorage.getItem('pwaDismissedTime');
     const now = new Date().getTime();
     
-    // Jika user pernah klik Nanti Saja dalam 3 hari terakhir (259200000 ms), hentikan
-    if (pwaDismissed && now - parseInt(pwaDismissed) < 259200000) {
-        return; 
-    }
+    // Deteksi iOS Safari & Standalone Mode
+    const isIos = () => /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+    const isInStandaloneMode = () => ('standalone' in window.navigator && window.navigator.standalone) 
+                                   || window.matchMedia('(display-mode: standalone)').matches;
 
-    // Deteksi iOS Safari
-    const isIos = () => {
-        const userAgent = window.navigator.userAgent.toLowerCase();
-        return /iphone|ipad|ipod/.test(userAgent);
-    }
-    
-    // Deteksi mode Standalone (Apakah aplikasi sudah diinstal?)
-    const isInStandaloneMode = () => {
-        return ('standalone' in window.navigator) && (window.navigator.standalone) 
-            || window.matchMedia('(display-mode: standalone)').matches;
-    }
-
-    // Tampilkan Prompt dengan Delay 3 detik
-    function showPrompt() {
-        if (isInStandaloneMode()) return; // Jangan tampilkan jika sudah diinstal
+    function showInstallPrompt() {
+        if (isInStandaloneMode()) return;
+        if (pwaDismissed && now - parseInt(pwaDismissed) < 259200000) return; // Hide for 3 days
         
         setTimeout(() => {
             pwaPrompt.classList.add('show');
         }, 3000);
     }
 
-    // Event penangkapan instalasi bawaan Chrome/Edge
+    // Tangkap event bawaan browser
     window.addEventListener('beforeinstallprompt', (e) => {
-        // Prevent default mini-infobar
         e.preventDefault();
-        // Simpan event untuk dipicu nanti
         deferredPrompt = e;
-        showPrompt();
+        showInstallPrompt();
     });
 
-    // Jika perangkat adalah iOS, event beforeinstallprompt tidak akan pernah terpanggil, 
-    // jadi kita panggil showPrompt secara manual
+    // Panggil manual jika iOS
     if (isIos() && !isInStandaloneMode()) {
         iosInstruction.style.display = 'flex';
-        btnInstall.style.display = 'none'; // Sembunyikan tombol install karena iOS butuh aksi manual
-        showPrompt();
+        btnInstall.style.display = 'none';
+        showInstallPrompt();
     }
 
-    // Tombol Instal Ditekan (Hanya untuk Chrome/Edge/Android)
+    // Aksi Tombol Instal
     btnInstall.addEventListener('click', async () => {
         if (deferredPrompt) {
             pwaPrompt.classList.remove('show');
             deferredPrompt.prompt();
             const { outcome } = await deferredPrompt.userChoice;
-            if (outcome === 'accepted') {
-                console.log('User accepted the PWA prompt');
-            }
             deferredPrompt = null;
         }
     });
 
-    // Tombol Nanti Saja Ditekan
+    // Aksi Tombol Nanti Saja
     btnLater.addEventListener('click', () => {
         pwaPrompt.classList.remove('show');
         localStorage.setItem('pwaDismissedTime', now.toString());
     });
     
-    // Deteksi instalasi sukses (misalnya user instal dari menu browser)
     window.addEventListener('appinstalled', () => {
         pwaPrompt.classList.remove('show');
-        console.log('PWA was installed');
     });
 });
 </script>
