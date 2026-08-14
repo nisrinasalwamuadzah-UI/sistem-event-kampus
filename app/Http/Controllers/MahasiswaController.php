@@ -90,9 +90,13 @@ class MahasiswaController extends Controller
         $file = $request->file('csv_file');
         
         $handle = fopen($file->getRealPath(), "r");
+        // Deteksi apakah CSV menggunakan koma (,) atau titik koma (;) - sering terjadi di Excel Indonesia
+        $firstLine = fgets($handle);
+        $delimiter = strpos($firstLine, ';') !== false ? ';' : ',';
+        rewind($handle);
         
         // Baca header CSV
-        $header = fgetcsv($handle, 1000, ",");
+        $header = fgetcsv($handle, 1000, $delimiter);
         
         // Validasi header sederhana
         if (!$header || strtolower($header[0]) !== 'nim') {
@@ -103,7 +107,7 @@ class MahasiswaController extends Controller
         $importedCount = 0;
         $updatedCount = 0;
 
-        while (($row = fgetcsv($handle, 1000, ",")) !== false) {
+        while (($row = fgetcsv($handle, 1000, $delimiter)) !== false) {
             // Abaikan baris kosong
             if (empty(array_filter($row))) continue;
 
@@ -150,10 +154,10 @@ class MahasiswaController extends Controller
 
         $callback = function() {
             $file = fopen('php://output', 'w');
-            // Header row
-            fputcsv($file, ['NIM', 'Nama Lengkap', 'Jurusan', 'Semester']);
+            // Header row (Gunakan titik koma agar otomatis terpisah di Excel versi Indonesia)
+            fputcsv($file, ['NIM', 'Nama Lengkap', 'Jurusan', 'Semester'], ';');
             // Sample row
-            fputcsv($file, ['24.1.9.0001', 'John Doe', 'Teknik Informatika', '4']);
+            fputcsv($file, ['24.1.9.0001', 'John Doe', 'Teknik Informatika', '4'], ';');
             fclose($file);
         };
 
