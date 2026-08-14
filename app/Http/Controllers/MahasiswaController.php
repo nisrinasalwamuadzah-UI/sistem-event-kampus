@@ -80,34 +80,34 @@ class MahasiswaController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'csv_file' => 'required|file|mimes:csv,txt|max:2048',
+            'csv_file' => 'required|file|mimes:csv,txt,xlsx,xls|max:5120',
         ], [
-            'csv_file.required' => 'Silakan pilih file CSV terlebih dahulu.',
-            'csv_file.mimes' => 'File harus berformat .csv atau .txt',
-            'csv_file.max' => 'Ukuran file maksimal 2MB',
+            'csv_file.required' => 'Silakan pilih file terlebih dahulu.',
+            'csv_file.mimes' => 'File harus berformat .csv, .txt, .xlsx, atau .xls',
+            'csv_file.max' => 'Ukuran file maksimal 5MB',
         ]);
 
         $file = $request->file('csv_file');
         
-        $handle = fopen($file->getRealPath(), "r");
-        // Deteksi apakah CSV menggunakan koma (,) atau titik koma (;) - sering terjadi di Excel Indonesia
-        $firstLine = fgets($handle);
-        $delimiter = strpos($firstLine, ';') !== false ? ';' : ',';
-        rewind($handle);
-        
-        // Baca header CSV
-        $header = fgetcsv($handle, 1000, $delimiter);
-        
-        // Validasi header sederhana
-        if (!$header || strtolower($header[0]) !== 'nim') {
-            fclose($handle);
-            return back()->with('error', 'Format CSV tidak valid. Pastikan kolom pertama adalah NIM. Silakan unduh template jika ragu.');
+        try {
+            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getRealPath());
+            $worksheet = $spreadsheet->getActiveSheet();
+            $rows = $worksheet->toArray();
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal membaca file: ' . $e->getMessage());
+        }
+
+        if (count($rows) < 1 || strtolower(trim($rows[0][0] ?? '')) !== 'nim') {
+            return back()->with('error', 'Format tidak valid. Pastikan kolom pertama (A1) adalah NIM. Silakan unduh template jika ragu.');
         }
 
         $importedCount = 0;
         $updatedCount = 0;
 
-        while (($row = fgetcsv($handle, 1000, $delimiter)) !== false) {
+        // Loop dari index 1 (mengabaikan header di index 0)
+        for ($i = 1; $i < count($rows); $i++) {
+            $row = $rows[$i];
+            
             // Abaikan baris kosong
             if (empty(array_filter($row))) continue;
 
@@ -139,8 +139,6 @@ class MahasiswaController extends Controller
                 $importedCount++;
             }
         }
-
-        fclose($handle);
 
         return back()->with('success', "Import berhasil! $importedCount data baru ditambahkan, $updatedCount data diperbarui.");
     }

@@ -30,7 +30,7 @@
             </form>
 
             <button type="button" class="btn btn-primary" onclick="document.getElementById('importModal').style.display='flex'" style="padding: 8px 16px; border-radius: 8px;">
-                <i class="ph-bold ph-file-csv"></i> Import CSV
+                <i class="ph-bold ph-file-xls"></i> Import Data
             </button>
         </div>
     </div>
@@ -105,8 +105,8 @@
                 @csrf
                 <div style="background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px; padding: 32px 20px; text-align: center; margin-bottom: 16px;">
                     <i class="ph-bold ph-file-csv" style="font-size: 48px; color: #94a3b8; margin-bottom: 12px;"></i>
-                    <p style="color: #475569; font-size: 14px; margin-bottom: 12px;">Pilih file berformat .csv atau .txt</p>
-                    <input type="file" name="csv_file" accept=".csv,.txt" required style="max-width: 100%; font-size: 14px;">
+                    <p style="color: #475569; font-size: 14px; margin-bottom: 12px;">Pilih file berformat .xlsx, .xls, atau .csv</p>
+                    <input type="file" name="csv_file" accept=".csv,.txt,.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" required style="max-width: 100%; font-size: 14px;">
                 </div>
 
                 <div style="background: #eff6ff; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; color: #1e3a8a;">
