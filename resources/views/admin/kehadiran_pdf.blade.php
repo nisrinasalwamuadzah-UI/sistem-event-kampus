@@ -91,7 +91,7 @@
         font-weight: bold;
         font-size: 14pt;
         margin-bottom: 20px;
-        text-decoration: underline;
+        text-transform: uppercase;
     }
 
     /* INFORMASI EVENT */
@@ -227,17 +227,13 @@
   <div class="surat-body">
       
       <div class="report-title">
-          LAPORAN KEHADIRAN EVENT
+          {{ $event->nama_event }}
       </div>
 
       <!-- INFORMASI EVENT -->
       <div class="details">
           <table>
-              <tr>
-                  <td class="label">Nama Event</td>
-                  <td style="width: 10px;">:</td>
-                  <td>{{ $event->nama_event }}</td>
-              </tr>
+
               <tr>
                   <td class="label">Tanggal Pelaksanaan</td>
                   <td>:</td>
