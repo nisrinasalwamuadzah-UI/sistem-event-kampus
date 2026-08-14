@@ -97,24 +97,58 @@ class MahasiswaController extends Controller
             return back()->with('error', 'Gagal membaca file: ' . $e->getMessage());
         }
 
-        if (count($rows) < 1 || strtolower(trim($rows[0][0] ?? '')) !== 'nim') {
-            return back()->with('error', 'Format tidak valid. Pastikan kolom pertama (A1) adalah NIM. Silakan unduh template jika ragu.');
+        if (count($rows) < 1) {
+            return back()->with('error', 'File kosong atau tidak valid.');
+        }
+
+        // 1. Cari Baris Header (Maksimal cari di 10 baris pertama untuk toleransi baris kosong)
+        $headerRowIndex = -1;
+        $colMap = [
+            'nim' => -1,
+            'nama' => -1,
+            'jurusan' => -1,
+            'semester' => -1,
+        ];
+
+        for ($i = 0; $i < min(10, count($rows)); $i++) {
+            $row = $rows[$i];
+            foreach ($row as $colIndex => $cellValue) {
+                $val = strtolower(trim($cellValue ?? ''));
+                if ($val === 'nim') $colMap['nim'] = $colIndex;
+                elseif ($val === 'nama' || $val === 'nama lengkap') $colMap['nama'] = $colIndex;
+                elseif ($val === 'jurusan' || $val === 'prodi' || $val === 'program studi') $colMap['jurusan'] = $colIndex;
+                elseif ($val === 'semester' || $val === 'kelas') $colMap['semester'] = $colIndex;
+            }
+
+            // Jika NIM ditemukan, kita asumsikan ini adalah baris header
+            if ($colMap['nim'] !== -1) {
+                $headerRowIndex = $i;
+                break;
+            }
+        }
+
+        if ($headerRowIndex === -1) {
+            return back()->with('error', 'Format tidak valid. Tidak dapat menemukan kolom "NIM". Pastikan penamaan header sesuai template.');
         }
 
         $importedCount = 0;
         $updatedCount = 0;
 
-        // Loop dari index 1 (mengabaikan header di index 0)
-        for ($i = 1; $i < count($rows); $i++) {
+        // Loop data mulai dari baris setelah header
+        for ($i = $headerRowIndex + 1; $i < count($rows); $i++) {
             $row = $rows[$i];
             
-            // Abaikan baris kosong
-            if (empty(array_filter($row))) continue;
+            // Abaikan baris jika kolom NIM dan Nama kosong
+            if (empty(trim($row[$colMap['nim']] ?? '')) && empty(trim($row[$colMap['nama']] ?? ''))) {
+                continue;
+            }
 
-            $nim = trim($row[0] ?? '');
-            $nama = trim($row[1] ?? '');
-            $jurusan = trim($row[2] ?? '');
-            $semester = trim($row[3] ?? '');
+            $nim = trim($row[$colMap['nim']] ?? '');
+            
+            // Jika kolom lain tidak ditemukan di header, nilainya kosong
+            $nama = $colMap['nama'] !== -1 ? trim($row[$colMap['nama']] ?? '') : '';
+            $jurusan = $colMap['jurusan'] !== -1 ? trim($row[$colMap['jurusan']] ?? '') : '';
+            $semester = $colMap['semester'] !== -1 ? trim($row[$colMap['semester']] ?? '') : '';
 
             if (empty($nim) || empty($nama)) continue;
 
@@ -152,10 +186,10 @@ class MahasiswaController extends Controller
 
         $callback = function() {
             $file = fopen('php://output', 'w');
-            // Header row (Gunakan titik koma agar otomatis terpisah di Excel versi Indonesia)
-            fputcsv($file, ['NIM', 'Nama Lengkap', 'Jurusan', 'Semester'], ';');
+            // Header row (Ditambahkan Nomor di awal sesuai permintaan)
+            fputcsv($file, ['No', 'NIM', 'Nama Lengkap', 'Program Studi', 'Kelas/Semester'], ';');
             // Sample row
-            fputcsv($file, ['24.1.9.0001', 'John Doe', 'Teknik Informatika', '4'], ';');
+            fputcsv($file, ['1', '24.1.9.0001', 'John Doe', 'Teknik Informatika', 'PAGI'], ';');
             fclose($file);
         };
 
