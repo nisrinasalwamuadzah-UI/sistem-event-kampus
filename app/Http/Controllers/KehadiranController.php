@@ -60,7 +60,7 @@ class KehadiranController extends Controller
                 'waktu_scan' => now(),
             ]);
 
-            return back()->with('success', 'Absensi berhasil');
+            return back()->with('success', 'Absensi Berhasil: ' . $mhs->nama . ' (' . $mhs->jurusan . ')');
 
         } catch (\Exception $e) {
             // TANGKAP ERROR 500 SECARA MANUAL DAN TAMPILKAN KE LAYAR

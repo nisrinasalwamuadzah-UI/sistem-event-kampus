@@ -110,30 +110,62 @@
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
-    // SweetAlert2 Toast Configuration
-    const Toast = Swal.mixin({
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 3000,
-        timerProgressBar: true,
-        didOpen: (toast) => {
-            toast.addEventListener('mouseenter', Swal.stopTimer)
-            toast.addEventListener('mouseleave', Swal.resumeTimer)
+    // Fungsi Suara (Audio Feedback) Menggunakan Web Audio API
+    function playBeep(type) {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gainNode = ctx.createGain();
+            
+            osc.connect(gainNode);
+            gainNode.connect(ctx.destination);
+            
+            if (type === 'success') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, ctx.currentTime); // Nada tinggi
+                osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.15);
+                gainNode.gain.setValueAtTime(1, ctx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.15);
+            } else {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, ctx.currentTime); // Nada rendah / buzzer
+                gainNode.gain.setValueAtTime(1, ctx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.4);
+            }
+        } catch (e) {
+            console.log("Browser tidak mendukung Audio API");
         }
-    });
+    }
 
     @if(session('success'))
-        Toast.fire({
+        playBeep('success');
+        Swal.fire({
             icon: 'success',
-            title: {!! json_encode(session('success')) !!}
+            title: 'Berhasil!',
+            text: {!! json_encode(session('success')) !!},
+            timer: 3000,
+            timerProgressBar: true,
+            showConfirmButton: false,
+            allowOutsideClick: false,
+            backdrop: `rgba(16, 185, 129, 0.2)` // Latar hijau tipis
         });
     @endif
 
     @if(session('error'))
-        Toast.fire({
+        playBeep('error');
+        Swal.fire({
             icon: 'error',
-            title: {!! json_encode(session('error')) !!}
+            title: 'Akses Ditolak / Gagal!',
+            text: {!! json_encode(session('error')) !!},
+            showConfirmButton: true,
+            confirmButtonText: 'Tutup & Lanjutkan',
+            confirmButtonColor: '#ef4444',
+            allowOutsideClick: false,
+            backdrop: `rgba(239, 68, 68, 0.3)` // Latar merah peringatan
         });
     @endif
 
