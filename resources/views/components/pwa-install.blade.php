@@ -215,22 +215,21 @@ document.addEventListener("DOMContentLoaded", () => {
         
         setTimeout(() => {
             pwaPrompt.classList.add('show');
-        }, 3000);
+        }, 1500); // Munculkan lebih cepat (1.5 detik)
     }
 
-    // Tangkap event bawaan browser
+    // Tangkap event bawaan browser jika ada
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredPrompt = e;
-        showInstallPrompt();
     });
 
-    // Panggil manual jika iOS
+    // Sesuaikan UI untuk iOS, lalu SELALU panggil pop-up (agar muncul saat baru buka web)
     if (isIos() && !isInStandaloneMode()) {
         iosInstruction.style.display = 'flex';
         btnInstall.style.display = 'none';
-        showInstallPrompt();
     }
+    showInstallPrompt(); 
 
     // Aksi Tombol Instal
     btnInstall.addEventListener('click', async () => {
@@ -239,6 +238,10 @@ document.addEventListener("DOMContentLoaded", () => {
             deferredPrompt.prompt();
             const { outcome } = await deferredPrompt.userChoice;
             deferredPrompt = null;
+        } else {
+            // Fallback jika browser belum memicu event instalasi (misal di Desktop)
+            alert("Untuk menginstal manual:\nKlik ikon Menu (titik tiga ⁝) di sudut kanan atas browser Anda, lalu pilih 'Install app' atau 'Add to Home screen'.");
+            pwaPrompt.classList.remove('show');
         }
     });
 
