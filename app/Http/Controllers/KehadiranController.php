@@ -33,7 +33,7 @@ class KehadiranController extends Controller
             $mhs = Mahasiswa::whereRaw("REPLACE(nim, '.', '') = ?", [$clean_nim])->first();
 
             if (!$mhs) {
-                return back()->with('error', 'Mahasiswa tidak ditemukan di database kampus');
+                return back()->with('error', 'Data Tidak Ditemukan: NIM ' . $clean_nim . ' tidak terdaftar di Database Induk Kampus!');
             }
 
             // Cek Eligibility (Apakah mahasiswa ini didaftarkan ke event ini?)
@@ -43,12 +43,12 @@ class KehadiranController extends Controller
                 ->exists();
 
             if (!$isRegistered) {
-                return back()->with('error', 'Akses Ditolak: Mahasiswa ini tidak terdaftar sebagai peserta event ini');
+                return back()->with('error', 'Akses Ditolak: ' . $mhs->nama . ' TIDAK TERDAFTAR sebagai peserta di event ini!');
             }
 
             $exists = Kehadiran::where('nim', $mhs->nim)->where('event_id', $request->event_id)->exists();
             if ($exists) {
-                return back()->with('error', 'Mahasiswa sudah absen untuk event ini');
+                return back()->with('error', 'Absensi Ganda: ' . $mhs->nama . ' SUDAH melakukan absensi sebelumnya!');
             }
 
             Kehadiran::create([
