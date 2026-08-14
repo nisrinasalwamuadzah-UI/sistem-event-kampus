@@ -120,5 +120,7 @@
             });
         }
     </script>
+    <!-- Custom PWA Install Prompt -->
+    @include('components.pwa-install')
 </body>
 </html>
