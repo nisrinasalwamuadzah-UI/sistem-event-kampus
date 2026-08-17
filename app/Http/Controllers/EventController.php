@@ -44,14 +44,22 @@ class EventController extends Controller
 
     public function edit($id)
     {
-        $event = Event::findOrFail($id);
+        $event = Event::find($id);
+
+        if (!$event) {
+            return redirect('/admin/event')->with('error', 'Event tidak ditemukan atau sudah dihapus.');
+        }
 
         return view('admin.event.edit', compact('event'));
     }
 
     public function update(Request $request, $id)
     {
-        $event = Event::findOrFail($id);
+        $event = Event::find($id);
+
+        if (!$event) {
+            return redirect('/admin/event')->with('error', 'Event tidak ditemukan atau sudah dihapus.');
+        }
 
         $request->validate([
             'nama_event' => 'required|string|max:255',
@@ -78,16 +86,25 @@ class EventController extends Controller
 
     public function delete($id)
     {
-        $event = Event::findOrFail($id);
+        $event = Event::find($id);
+
+        if (!$event) {
+            return redirect('/admin/event')->with('error', 'Event tidak ditemukan atau sudah dihapus.');
+        }
 
         $event->delete();
 
-        return redirect('/admin/event');
+        return redirect('/admin/event')->with('success', 'Event berhasil dihapus.');
     }
 
     public function peserta($id)
     {
-        $event = Event::findOrFail($id);
+        $event = Event::find($id);
+        
+        if (!$event) {
+            return redirect('/admin/event')->with('error', 'Event tidak ditemukan atau sudah dihapus.');
+        }
+
         $mahasiswas = \App\Models\Mahasiswa::all();
         
         // Get array of registered NIMs for this event
@@ -101,7 +118,11 @@ class EventController extends Controller
 
     public function updatePeserta(Request $request, $id)
     {
-        $event = Event::findOrFail($id);
+        $event = Event::find($id);
+        
+        if (!$event) {
+            return redirect('/admin/event')->with('error', 'Event tidak ditemukan atau sudah dihapus.');
+        }
         
         // nims is an array of checked NIMs from the form
         $nims = $request->input('nims', []);
