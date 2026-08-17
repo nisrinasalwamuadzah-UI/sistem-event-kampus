@@ -29,10 +29,9 @@ COPY --chown=www-data:www-data . /var/www/html/
 # Copy built Vite assets from the frontend stage
 COPY --chown=www-data:www-data --from=frontend /app/public/build /var/www/html/public/build
 
-# Install PHP dependencies for production (as root to access Docker secrets)
+# Install PHP dependencies for production (as root to bypass permissions)
 ENV COMPOSER_ALLOW_SUPERUSER=1
-RUN --mount=type=secret,id=github_token \
-    composer config -g github-oauth.github.com $(cat /run/secrets/github_token) && \
+RUN apt-get update && apt-get install -y git unzip && rm -rf /var/lib/apt/lists/* && \
     composer install --no-dev --optimize-autoloader --no-interaction && \
     composer clear-cache && \
     chown -R www-data:www-data /var/www/html
