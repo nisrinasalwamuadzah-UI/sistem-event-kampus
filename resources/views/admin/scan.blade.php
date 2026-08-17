@@ -255,12 +255,13 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
         } catch (error) {
+            console.error("AJAX Error:", error);
             isAlertShowing = true;
             playBeep('error');
             Swal.fire({
                 icon: 'error',
-                title: 'Error Koneksi!',
-                text: 'Gagal terhubung ke server. Pastikan internet lancar.',
+                title: 'Error Sistem / Koneksi!',
+                text: 'Detail: ' + error.message,
                 confirmButtonText: 'Tutup',
                 confirmButtonColor: '#ef4444',
             }).then(() => {
