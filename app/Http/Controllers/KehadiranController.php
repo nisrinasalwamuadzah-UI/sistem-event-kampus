@@ -33,7 +33,8 @@ class KehadiranController extends Controller
             $mhs = Mahasiswa::whereRaw("REPLACE(nim, '.', '') = ?", [$clean_nim])->first();
 
             if (!$mhs) {
-                return back()->with('error', 'Data Tidak Ditemukan: NIM ' . $clean_nim . ' tidak terdaftar di Database Induk Kampus!');
+                $msg = 'Data Tidak Ditemukan: NIM ' . $clean_nim . ' tidak terdaftar di Database Induk Kampus!';
+                return $request->wantsJson() ? response()->json(['status' => 'error', 'message' => $msg]) : back()->with('error', $msg);
             }
 
             // Cek Eligibility (Apakah mahasiswa ini didaftarkan ke event ini?)
@@ -43,12 +44,14 @@ class KehadiranController extends Controller
                 ->exists();
 
             if (!$isRegistered) {
-                return back()->with('error', 'Akses Ditolak: ' . $mhs->nama . ' TIDAK TERDAFTAR sebagai peserta di event ini!');
+                $msg = 'Akses Ditolak: ' . $mhs->nama . ' TIDAK TERDAFTAR sebagai peserta di event ini!';
+                return $request->wantsJson() ? response()->json(['status' => 'error', 'message' => $msg]) : back()->with('error', $msg);
             }
 
             $exists = Kehadiran::where('nim', $mhs->nim)->where('event_id', $request->event_id)->exists();
             if ($exists) {
-                return back()->with('error', 'Absensi Ganda: ' . $mhs->nama . ' SUDAH melakukan absensi sebelumnya!');
+                $msg = 'Absensi Ganda: ' . $mhs->nama . ' SUDAH melakukan absensi sebelumnya!';
+                return $request->wantsJson() ? response()->json(['status' => 'error', 'message' => $msg]) : back()->with('error', $msg);
             }
 
             Kehadiran::create([
@@ -60,11 +63,13 @@ class KehadiranController extends Controller
                 'waktu_scan' => now(),
             ]);
 
-            return back()->with('success', 'Absensi Berhasil: ' . $mhs->nama . ' (' . $mhs->jurusan . ')');
+            $msg = 'Absensi Berhasil: ' . $mhs->nama . ' (' . $mhs->jurusan . ')';
+            return $request->wantsJson() ? response()->json(['status' => 'success', 'message' => $msg]) : back()->with('success', $msg);
 
         } catch (\Exception $e) {
             // TANGKAP ERROR 500 SECARA MANUAL DAN TAMPILKAN KE LAYAR
-            return back()->with('error', 'CRITICAL ERROR: ' . $e->getMessage());
+            $msg = 'CRITICAL ERROR: ' . $e->getMessage();
+            return $request->wantsJson() ? response()->json(['status' => 'error', 'message' => $msg], 500) : back()->with('error', $msg);
         }
     }
 
