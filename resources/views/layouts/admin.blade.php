@@ -113,6 +113,36 @@
     @yield('extra_js')
 
 
+    <!-- Global SweetAlert Notifications -->
+    @if(session('success'))
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: {!! json_encode(session('success')) !!},
+                timer: 3000,
+                timerProgressBar: true,
+                showConfirmButton: false
+            });
+        });
+    </script>
+    @endif
+
+    @if(session('error') || $errors->any())
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            Swal.fire({
+                icon: 'error',
+                title: 'Gagal!',
+                html: {!! json_encode(session('error') ? session('error') : implode('<br>', $errors->all())) !!},
+                confirmButtonText: 'Tutup',
+                confirmButtonColor: '#ef4444'
+            });
+        });
+    </script>
+    @endif
+
     <!-- Custom PWA Install Prompt -->
     @include('components.pwa-install')
 </body>

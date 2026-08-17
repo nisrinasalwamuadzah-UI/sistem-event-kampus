@@ -35,29 +35,7 @@
         </div>
     </div>
 
-    @if(session('success'))
-        <div style="background: #ecfdf5; color: #059669; padding: 16px; border-radius: 12px; border: 1px solid #a7f3d0; margin-bottom: 24px; font-size: 14px; display: flex; align-items: center; gap: 8px;">
-            <i class="ph-bold ph-check-circle" style="font-size: 20px;"></i>
-            {{ session('success') }}
-        </div>
-    @endif
 
-    @if(session('error'))
-        <div style="background: #fef2f2; color: #dc2626; padding: 16px; border-radius: 12px; border: 1px solid #fecaca; margin-bottom: 24px; font-size: 14px; display: flex; align-items: center; gap: 8px;">
-            <i class="ph-bold ph-warning-circle" style="font-size: 20px;"></i>
-            {{ session('error') }}
-        </div>
-    @endif
-
-    @if($errors->any())
-        <div style="background: #fef2f2; color: #dc2626; padding: 16px; border-radius: 12px; border: 1px solid #fecaca; margin-bottom: 24px; font-size: 14px;">
-            <ul style="margin-left: 15px; margin-bottom: 0;">
-                @foreach($errors->all() as $err)
-                    <li>{{ $err }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
 
     <div class="table-container" style="background: white; border-radius: 16px; border: 1px solid #e2e8f0; overflow-x: auto; margin-bottom: 24px;">
         <table class="table" style="width: 100%; border-collapse: collapse; text-align: left;">
