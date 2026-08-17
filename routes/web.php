@@ -68,6 +68,7 @@ Route::get('/admin/dashboard', function () {
         'totalTidakHadir'
     ));
 });
+
 /*
 |--------------------------------------------------------------------------
 | ROUTE GROUP: ADMIN ONLY (SECURITY FIX)
@@ -79,6 +80,17 @@ Route::middleware(\App\Http\Middleware\AdminMiddleware::class)->group(function (
     Route::get('/admin/event', [EventController::class, 'index']);
     Route::get('/admin/event/create', [EventController::class, 'create']);
     Route::post('/admin/event/store', [EventController::class, 'store']);
+    
+    // DEBUG ROUTE!
+    Route::get('/admin/event/debug-id/{id}', function($id) {
+        $event = \App\Models\Event::find($id);
+        return response()->json([
+            'id_passed' => $id,
+            'event' => $event,
+            'all_events' => \App\Models\Event::all()
+        ]);
+    });
+
     Route::get('/admin/event/edit/{id}', [EventController::class, 'edit']);
     Route::match(['GET', 'POST'], '/admin/event/update/{id}', [EventController::class, 'update']);
     Route::match(['GET', 'POST'], '/admin/event/delete/{id}', [EventController::class, 'delete']);
@@ -119,12 +131,6 @@ Route::middleware(\App\Http\Middleware\AdminMiddleware::class)->group(function (
     });
 
 }); // End of Admin Group
-
-/*
-|--------------------------------------------------------------------------
-| EVENT REGISTRATION (REMOVED)
-|--------------------------------------------------------------------------
-*/
 
 /*
 |--------------------------------------------------------------------------
