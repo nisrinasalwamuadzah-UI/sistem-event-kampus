@@ -219,6 +219,33 @@ document.addEventListener("DOMContentLoaded", () => {
                 body: formData
             });
 
+            // FIX ARIA WARNING: Lepaskan fokus dari input sebelum memanggil pop-up Swal
+            if (document.activeElement) {
+                document.activeElement.blur();
+            }
+
+            // PENANGANAN SESI HABIS
+            if (response.status === 419) {
+                isAlertShowing = true;
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Sesi Kedaluwarsa!',
+                    text: 'Sesi Anda telah habis. Halaman akan dimuat ulang secara otomatis.',
+                    timer: 3000,
+                    showConfirmButton: false,
+                    allowOutsideClick: false
+                }).then(() => {
+                    window.location.reload();
+                });
+                return;
+            }
+
+            // PENANGANAN HTML ERROR DARI SERVER (NON-JSON)
+            const contentType = response.headers.get("content-type");
+            if (!contentType || contentType.indexOf("application/json") === -1) {
+                throw new Error("Server membalas dengan format yang tidak dikenali (bukan JSON). Hubungi administrator.");
+            }
+
             const data = await response.json();
             isAlertShowing = true;
 
