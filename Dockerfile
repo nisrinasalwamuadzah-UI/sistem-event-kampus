@@ -29,14 +29,16 @@ COPY --chown=www-data:www-data . /var/www/html/
 # Copy built Vite assets from the frontend stage
 COPY --chown=www-data:www-data --from=frontend /app/public/build /var/www/html/public/build
 
-# Switch back to the unprivileged www-data user
-USER www-data
-
-# Install PHP dependencies for production
+# Install PHP dependencies for production (as root to access Docker secrets)
+ENV COMPOSER_ALLOW_SUPERUSER=1
 RUN --mount=type=secret,id=github_token \
     composer config -g github-oauth.github.com $(cat /run/secrets/github_token) && \
     composer install --no-dev --optimize-autoloader --no-interaction && \
-    composer clear-cache
+    composer clear-cache && \
+    chown -R www-data:www-data /var/www/html
+
+# Switch back to the unprivileged www-data user
+USER www-data
 
 # Create storage symlink
 RUN php artisan storage:link
