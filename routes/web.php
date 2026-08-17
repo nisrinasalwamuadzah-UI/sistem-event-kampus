@@ -73,12 +73,7 @@ Route::get('/admin/dashboard', function () {
 | ROUTE GROUP: ADMIN ONLY (SECURITY FIX)
 |--------------------------------------------------------------------------
 */
-Route::middleware(function ($request, $next) {
-    if (Session::get('role') != 'admin') {
-        return redirect('/admin/login');
-    }
-    return $next($request);
-})->group(function () {
+Route::middleware(\App\Http\Middleware\AdminMiddleware::class)->group(function () {
 
     /* --- EVENT CRUD --- */
     Route::get('/admin/event', [EventController::class, 'index']);
