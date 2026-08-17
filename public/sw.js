@@ -1,4 +1,4 @@
-const CACHE_NAME = 'campusevent-cache-v3';
+const CACHE_NAME = 'campusevent-cache-v4';
 const urlsToCache = [
   '/',
   '/css/dashboard.css',
