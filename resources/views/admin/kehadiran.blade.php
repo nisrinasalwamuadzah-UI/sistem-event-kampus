@@ -60,8 +60,8 @@
             </div>
         </div>
 
-        <div class="table-container">
-            <table>
+        <div class="table-container" style="background: white; border-radius: 16px; border: 1px solid #e2e8f0; overflow-x: auto; margin-bottom: 24px;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left; min-width: 600px;">
                 <thead>
                     <tr>
                         <th>NIM</th>

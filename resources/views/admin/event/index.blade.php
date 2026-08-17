@@ -4,7 +4,7 @@
 
 @section('content')
 
-    <div class="header-section" style="display: flex; justify-content: space-between; align-items: center;">
+    <div class="header-section" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
         <div>
             <h2>Kelola Event</h2>
             <p>Daftar kegiatan kampus</p>

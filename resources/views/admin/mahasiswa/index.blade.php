@@ -12,19 +12,19 @@
         
         <div style="display: flex; gap: 8px;">
             <form method="GET" action="{{ url('/admin/mahasiswa') }}" style="display: flex; gap: 8px; flex-wrap: wrap;">
-                <select name="event_id" class="form-control" style="min-width: 190px; width: auto; padding: 8px 40px 8px 12px; border-radius: 8px; cursor: pointer;">
+                <select name="event_id" class="form-control" style="flex: 1 1 200px; max-width: 100%; padding: 8px 40px 8px 12px; border-radius: 8px; cursor: pointer;">
                     <option value="">Semua Event</option>
                     @foreach($events as $event)
                         <option value="{{ $event->id }}" {{ ($eventId ?? '') == $event->id ? 'selected' : '' }}>{{ $event->nama_event }}</option>
                     @endforeach
                 </select>
-                <select name="angkatan" class="form-control" style="min-width: 170px; width: auto; padding: 8px 40px 8px 12px; border-radius: 8px; cursor: pointer;">
+                <select name="angkatan" class="form-control" style="flex: 1 1 170px; max-width: 100%; padding: 8px 40px 8px 12px; border-radius: 8px; cursor: pointer;">
                     <option value="">Semua Angkatan</option>
                     @foreach($angkatans as $thn)
                         <option value="{{ $thn }}" {{ $angkatan == $thn ? 'selected' : '' }}>Angkatan {{ $thn }}</option>
                     @endforeach
                 </select>
-                <button type="submit" class="btn btn-secondary" style="padding: 8px 16px;">
+                <button type="submit" class="btn btn-secondary" style="padding: 8px 16px; flex: 1 1 auto; white-space: nowrap;">
                     <i class="ph-bold ph-funnel"></i> Filter
                 </button>
             </form>
@@ -59,7 +59,7 @@
         </div>
     @endif
 
-    <div class="table-container" style="background: white; border-radius: 16px; border: 1px solid #e2e8f0; overflow: hidden; margin-bottom: 24px;">
+    <div class="table-container" style="background: white; border-radius: 16px; border: 1px solid #e2e8f0; overflow-x: auto; margin-bottom: 24px;">
         <table class="table" style="width: 100%; border-collapse: collapse; text-align: left;">
             <thead style="background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
                 <tr>
@@ -91,9 +91,8 @@
         </table>
     </div>
 
-    <!-- Modal Import CSV -->
-    <div id="importModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
-        <div style="background: white; width: 100%; max-width: 500px; border-radius: 20px; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);">
+    <div id="importModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); padding: 16px;">
+        <div style="background: white; width: 100%; max-width: 500px; border-radius: 20px; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); max-height: 90vh; overflow-y: auto;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h3 style="margin: 0; font-size: 18px; color: #0f172a;"><i class="ph-bold ph-upload-simple"></i> Import Data Mahasiswa</h3>
                 <button type="button" onclick="document.getElementById('importModal').style.display='none'" style="background: transparent; border: none; font-size: 20px; cursor: pointer; color: #64748b;">
@@ -113,7 +112,7 @@
                     <i class="ph-bold ph-info"></i> Pastikan format baris pertama sesuai dengan Template. Jika ragu, unduh template di bawah.
                 </div>
 
-                <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-end;">
                     <a href="{{ url('/admin/mahasiswa/template') }}" class="btn btn-secondary" style="font-size: 14px; padding: 10px 16px;">
                         Unduh Template
                     </a>
