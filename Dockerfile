@@ -31,10 +31,8 @@ COPY --chown=www-data:www-data --from=frontend /app/public/build /var/www/html/p
 
 # Install PHP dependencies for production (as root to bypass permissions)
 ENV COMPOSER_ALLOW_SUPERUSER=1
-RUN --mount=type=secret,id=github_token \
-    apt-get update && apt-get install -y git unzip && rm -rf /var/lib/apt/lists/* && \
-    composer config -g github-oauth.github.com $(cat /run/secrets/github_token) && \
-    composer install --no-dev --optimize-autoloader --no-interaction && \
+RUN apt-get update && apt-get install -y git unzip && rm -rf /var/lib/apt/lists/* && \
+    composer install --no-dev --optimize-autoloader --no-interaction --prefer-source && \
     composer clear-cache && \
     chown -R www-data:www-data /var/www/html
 
