@@ -32,25 +32,29 @@
                 </div>
 
                 <div class="event-actions">
-                    <div style="display: flex; gap: 8px; margin-bottom: 8px; width: 100%;">
-                        <a href="{{ url('/admin/event/'.$event->id.'/peserta') }}" class="btn btn-sm btn-primary" style="flex: 1;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; width: 100%;">
+                        <a href="{{ url('/admin/event/'.$event->id.'/peserta') }}" class="btn btn-sm btn-primary" style="flex: 1 1 45%;">
                             <i class="ph-bold ph-users"></i> Peserta
                         </a>
                         @if($event->status == 'Aktif')
-                        <a href="{{ url('/admin/event/finish/'.$event->id) }}" onclick="return confirm('Akhiri event ini?')" class="btn btn-sm btn-warning" style="flex: 1; background: #f59e0b; color: white; border: none;">
-                            <i class="ph-bold ph-stop-circle"></i> Akhiri
-                        </a>
+                        <form action="{{ url('/admin/event/finish/'.$event->id) }}" method="POST" style="flex: 1 1 45%; display: flex;" onsubmit="return confirm('Akhiri event ini?')">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-warning" style="flex: 1; background: #f59e0b; color: white; border: none;">
+                                <i class="ph-bold ph-stop-circle"></i> Akhiri
+                            </button>
+                        </form>
                         @endif
                     </div>
-                    <div style="display: flex; gap: 8px; width: 100%;">
-                        <a href="{{ url('/admin/event/edit/'.$event->id) }}" class="btn btn-sm btn-secondary" style="flex: 1;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; width: 100%;">
+                        <a href="{{ url('/admin/event/edit/'.$event->id) }}" class="btn btn-sm btn-secondary" style="flex: 1 1 45%;">
                             <i class="ph-bold ph-pencil-simple"></i> Edit
                         </a>
-                        <a href="{{ url('/admin/event/delete/'.$event->id) }}" 
-                           onclick="return confirm('Yakin mau hapus event ini?')" 
-                           class="btn btn-sm btn-danger" style="flex: 1;">
-                            <i class="ph-bold ph-trash"></i> Hapus
-                        </a>
+                        <form action="{{ url('/admin/event/delete/'.$event->id) }}" method="POST" style="flex: 1 1 45%; display: flex;" onsubmit="return confirm('Yakin mau hapus event ini?')">
+                            @csrf
+                            <button type="submit" class="btn btn-sm btn-danger" style="flex: 1;">
+                                <i class="ph-bold ph-trash"></i> Hapus
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
