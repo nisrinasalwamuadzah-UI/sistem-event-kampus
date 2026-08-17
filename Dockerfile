@@ -1,5 +1,5 @@
 # Stage 1: Build Frontend Assets
-FROM node:20-alpine AS frontend
+FROM node:22-alpine AS frontend
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
@@ -33,6 +33,7 @@ COPY --chown=www-data:www-data --from=frontend /app/public/build /var/www/html/p
 USER www-data
 
 # Install PHP dependencies for production
+ARG COMPOSER_AUTH
 RUN composer install --no-dev --optimize-autoloader --no-interaction && \
     composer clear-cache
 
