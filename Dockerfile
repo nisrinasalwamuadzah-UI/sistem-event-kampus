@@ -32,6 +32,7 @@ COPY --chown=www-data:www-data --from=frontend /app/public/build /var/www/html/p
 # Install PHP dependencies for production (as root to bypass permissions)
 ENV COMPOSER_ALLOW_SUPERUSER=1
 RUN apt-get update && apt-get install -y git unzip && rm -rf /var/lib/apt/lists/* && \
+    composer config preferred-install auto && \
     composer install --no-dev --optimize-autoloader --no-interaction && \
     composer clear-cache && \
     chown -R www-data:www-data /var/www/html
