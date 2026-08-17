@@ -33,8 +33,9 @@ COPY --chown=www-data:www-data --from=frontend /app/public/build /var/www/html/p
 USER www-data
 
 # Install PHP dependencies for production
-ARG COMPOSER_AUTH
-RUN composer install --no-dev --optimize-autoloader --no-interaction && \
+RUN --mount=type=secret,id=github_token \
+    composer config -g github-oauth.github.com $(cat /run/secrets/github_token) && \
+    composer install --no-dev --optimize-autoloader --no-interaction && \
     composer clear-cache
 
 # Create storage symlink
