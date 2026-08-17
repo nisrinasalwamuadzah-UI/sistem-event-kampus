@@ -80,11 +80,11 @@ Route::middleware(\App\Http\Middleware\AdminMiddleware::class)->group(function (
     Route::get('/admin/event/create', [EventController::class, 'create']);
     Route::post('/admin/event/store', [EventController::class, 'store']);
     Route::get('/admin/event/edit/{id}', [EventController::class, 'edit']);
-    Route::post('/admin/event/update/{id}', [EventController::class, 'update']);
-    Route::post('/admin/event/delete/{id}', [EventController::class, 'delete']);
+    Route::match(['GET', 'POST'], '/admin/event/update/{id}', [EventController::class, 'update']);
+    Route::match(['GET', 'POST'], '/admin/event/delete/{id}', [EventController::class, 'delete']);
     Route::get('/admin/event/{id}/peserta', [EventController::class, 'peserta']);
     Route::post('/admin/event/{id}/peserta', [EventController::class, 'updatePeserta']);
-    Route::post('/admin/event/finish/{id}', function ($id) {
+    Route::match(['GET', 'POST'], '/admin/event/finish/{id}', function ($id) {
         $event = \App\Models\Event::findOrFail($id);
         $event->status = 'Selesai';
         $event->save();
