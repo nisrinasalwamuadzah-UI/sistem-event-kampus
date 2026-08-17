@@ -110,19 +110,34 @@
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
-    // Fungsi Suara (Audio Feedback) Menggunakan Web Audio API
+    // --- 1. STATE MANAGEMENT ---
+    let currentMode = localStorage.getItem('scan_mode') || 'barcode';
+    let html5QrcodeScanner = null;
+    let isProcessing = false;
+    let isAlertShowing = false;
+
+    // Pulihkan Event ID yang terakhir dipilih
+    const eventSelect = document.getElementById('event_id');
+    const savedEventId = localStorage.getItem('selected_event_id');
+    if (savedEventId && [...eventSelect.options].some(opt => opt.value === savedEventId)) {
+        eventSelect.value = savedEventId;
+    }
+    eventSelect.addEventListener('change', () => {
+        localStorage.setItem('selected_event_id', eventSelect.value);
+    });
+
+    // --- 2. AUDIO FEEDBACK ---
     function playBeep(type) {
         try {
             const ctx = new (window.AudioContext || window.webkitAudioContext)();
             const osc = ctx.createOscillator();
             const gainNode = ctx.createGain();
-            
             osc.connect(gainNode);
             gainNode.connect(ctx.destination);
             
             if (type === 'success') {
                 osc.type = 'sine';
-                osc.frequency.setValueAtTime(800, ctx.currentTime); // Nada tinggi
+                osc.frequency.setValueAtTime(800, ctx.currentTime);
                 osc.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.15);
                 gainNode.gain.setValueAtTime(1, ctx.currentTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
@@ -130,63 +145,137 @@ document.addEventListener("DOMContentLoaded", () => {
                 osc.stop(ctx.currentTime + 0.15);
             } else {
                 osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(150, ctx.currentTime); // Nada rendah / buzzer
+                osc.frequency.setValueAtTime(150, ctx.currentTime);
                 gainNode.gain.setValueAtTime(1, ctx.currentTime);
                 gainNode.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.4);
                 osc.start();
                 osc.stop(ctx.currentTime + 0.4);
             }
         } catch (e) {
-            console.log("Browser tidak mendukung Audio API");
+            console.log("Audio API not supported");
         }
     }
 
-    @if(session('success'))
-        playBeep('success');
-        Swal.fire({
-            icon: 'success',
-            title: 'Berhasil!',
-            text: {!! json_encode(session('success')) !!},
-            timer: 3000,
-            timerProgressBar: true,
-            showConfirmButton: false,
-            allowOutsideClick: false,
-            backdrop: `rgba(16, 185, 129, 0.2)` // Latar hijau tipis
-        });
-    @endif
+    // --- 3. UI RESETTER ---
+    function resetUI() {
+        const nimField = document.getElementById('nim');
+        nimField.value = '';
+        nimField.style.background = 'white';
+        nimField.style.color = '#0f172a';
+        nimField.style.borderColor = '#cbd5e1';
 
-    @if(session('error'))
-        playBeep('error');
-        Swal.fire({
-            icon: 'error',
-            title: 'Akses Ditolak / Gagal!',
-            text: {!! json_encode(session('error')) !!},
-            showConfirmButton: true,
-            confirmButtonText: 'Tutup & Lanjutkan',
-            confirmButtonColor: '#ef4444',
-            allowOutsideClick: false,
-            backdrop: `rgba(239, 68, 68, 0.3)` // Latar merah peringatan
-        });
-    @endif
-
-    let currentMode = 'barcode'; // Tab aktif saat ini
-    let html5QrcodeScanner = null;
-    let isProcessing = false; // Mencegah multiple submit
-
-    // Global Result Handler
-    window.processResult = function(decodedText) {
-        if (isProcessing) return;
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.innerHTML = '<i class="ph-bold ph-check-circle"></i> Submit Kehadiran';
+        submitBtn.style.background = '#4f46e5';
+        submitBtn.style.borderColor = '#4f46e5';
         
-        const eventSelect = document.getElementById('event_id');
+        const indicator = document.getElementById('scanIndicator');
+        indicator.innerHTML = '<span class="pulsing-dot" style="width: 8px; height: 8px; background: #059669; border-radius: 50%; display: inline-block; margin-right: 6px;"></span> Kamera Aktif';
+        indicator.style.background = '#dcfce7';
+        indicator.style.color = '#059669';
+
+        isProcessing = false;
+        
+        // Resume kamera
+        if (currentMode === 'barcode') {
+            document.getElementById('laser-overlay-barcode').style.display = 'block';
+            // Quagga is mostly continuous, it will keep scanning
+        } else if (currentMode === 'qr') {
+            if (html5QrcodeScanner) html5QrcodeScanner.resume();
+        }
+        
+        // Fokus kembali ke input NIM untuk ketik manual
+        nimField.focus();
+    }
+
+    // --- 4. AJAX SUBMIT ---
+    async function submitScan(nimValue) {
         if (!eventSelect.value) {
             alert("⚠️ Pilih Event Aktif terlebih dahulu sebelum scan!");
             eventSelect.focus();
+            isProcessing = false;
             return;
         }
 
+        // Hentikan sementara UI Kamera
+        if (currentMode === 'barcode') {
+            document.getElementById('laser-overlay-barcode').style.display = 'none';
+        } else if (currentMode === 'qr') {
+            if (html5QrcodeScanner) html5QrcodeScanner.pause(true);
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('nim', nimValue);
+            formData.append('event_id', eventSelect.value);
+            formData.append('_token', document.querySelector('input[name="_token"]').value);
+
+            const response = await fetch('{{ url('/admin/scan') }}', {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            });
+
+            const data = await response.json();
+            isAlertShowing = true;
+
+            if (data.status === 'success') {
+                playBeep('success');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: data.message,
+                    timer: 6000,
+                    timerProgressBar: true,
+                    showConfirmButton: false,
+                    allowOutsideClick: false,
+                    backdrop: `rgba(16, 185, 129, 0.2)`
+                }).then(() => {
+                    isAlertShowing = false;
+                    resetUI();
+                });
+            } else {
+                playBeep('error');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    text: data.message || 'Terjadi kesalahan sistem.',
+                    showConfirmButton: true,
+                    confirmButtonText: 'Tutup & Lanjutkan',
+                    confirmButtonColor: '#ef4444',
+                    allowOutsideClick: false,
+                    backdrop: `rgba(239, 68, 68, 0.3)`
+                }).then(() => {
+                    isAlertShowing = false;
+                    resetUI();
+                });
+            }
+
+        } catch (error) {
+            isAlertShowing = true;
+            playBeep('error');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error Koneksi!',
+                text: 'Gagal terhubung ke server. Pastikan internet lancar.',
+                confirmButtonText: 'Tutup',
+                confirmButtonColor: '#ef4444',
+            }).then(() => {
+                isAlertShowing = false;
+                resetUI();
+            });
+        }
+    }
+
+    // --- 5. GLOBAL RESULT HANDLER ---
+    window.processResult = function(decodedText) {
+        if (isProcessing || isAlertShowing) return;
         isProcessing = true;
 
-        // Visual Feedback
+        // Visual Feedback Instant
         const nimField = document.getElementById('nim');
         nimField.value = decodedText.trim();
         nimField.style.background = '#ecfdf5';
@@ -199,21 +288,25 @@ document.addEventListener("DOMContentLoaded", () => {
         submitBtn.style.borderColor = '#059669';
         
         const indicator = document.getElementById('scanIndicator');
-        indicator.innerHTML = '✅ Berhasil!';
+        indicator.innerHTML = '✅ Memproses...';
         indicator.style.background = '#ecfdf5';
         indicator.style.color = '#059669';
 
-        // Hentikan engine yang sedang berjalan
-        if (currentMode === 'barcode') {
-            document.getElementById('laser-overlay-barcode').style.display = 'none';
-            try { Quagga.stop(); } catch(e) {}
-        } else if (currentMode === 'qr') {
-            if (html5QrcodeScanner) html5QrcodeScanner.pause(true);
-        }
-
-        // Auto submit
-        document.getElementById('scanForm').submit();
+        submitScan(decodedText.trim());
     }
+
+    // Override manual form submit
+    document.getElementById('scanForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        if (isProcessing || isAlertShowing) return;
+        isProcessing = true;
+        const nimValue = document.getElementById('nim').value.trim();
+        if (nimValue) {
+            submitScan(nimValue);
+        } else {
+            isProcessing = false;
+        }
+    });
 
     // --- ENGINE 1: QUAGGA2 (BARCODE 1D) ---
     function startBarcodeScanner() {
@@ -222,29 +315,20 @@ document.addEventListener("DOMContentLoaded", () => {
                 name: "Live",
                 type: "LiveStream",
                 target: document.querySelector('#barcode-reader'),
-                constraints: {
-                    facingMode: "environment" // No forced resolution
-                },
+                constraints: { facingMode: "environment" },
             },
-            decoder: {
-                readers: ["code_128_reader", "code_39_reader"] // Khusus KTM/Barang
-            },
-            locate: true, // Gunakan Computer Vision (Locators)
+            decoder: { readers: ["code_128_reader", "code_39_reader"] },
+            locate: true,
         }, function(err) {
-            if (err) {
-                console.error("Quagga Init Error:", err);
-                return;
-            }
+            if (err) return;
             Quagga.start();
         });
-
-        // Event listener saat terdeteksi
         Quagga.onDetected(function(result) {
-            var code = result.codeResult.code;
-            processResult(code);
+            if (!isProcessing && !isAlertShowing) {
+                processResult(result.codeResult.code);
+            }
         });
     }
-
     function stopBarcodeScanner() {
         try { Quagga.stop(); } catch(e) {}
     }
@@ -255,19 +339,21 @@ document.addEventListener("DOMContentLoaded", () => {
             "qr-reader",
             {
                 fps: 10,
-                formatsToSupport: [ 0 ], // HANYA QR_CODE
-                supportedScanTypes: [0], // NO FILE UPLOAD UI
+                formatsToSupport: [ 0 ],
+                supportedScanTypes: [0],
                 videoConstraints: { facingMode: "environment" }
             },
             false
         );
-
         html5QrcodeScanner.render(
-            (decodedText) => processResult(decodedText),
-            () => {} // Abaikan error per frame
+            (decodedText) => {
+                if (!isProcessing && !isAlertShowing) {
+                    processResult(decodedText);
+                }
+            },
+            () => {} 
         );
     }
-
     function stopQrScanner() {
         if (html5QrcodeScanner) {
             html5QrcodeScanner.clear().catch(()=>{});
@@ -277,15 +363,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- TAB MANAGER ---
     window.switchTab = function(mode) {
-        if (mode === currentMode) return;
-
-        // 1. Matikan engine yang menyala saat ini
-        if (currentMode === 'barcode') stopBarcodeScanner();
-        if (currentMode === 'qr') stopQrScanner();
+        if (currentMode === 'barcode' && mode !== 'barcode') stopBarcodeScanner();
+        if (currentMode === 'qr' && mode !== 'qr') stopQrScanner();
 
         currentMode = mode;
+        localStorage.setItem('scan_mode', mode);
 
-        // 2. Ubah UI
         const btnBarcode = document.getElementById('tab-barcode');
         const btnQr = document.getElementById('tab-qr');
         const contBarcode = document.getElementById('container-barcode');
@@ -296,35 +379,34 @@ document.addEventListener("DOMContentLoaded", () => {
             btnBarcode.style.background = '#3b82f6';
             btnBarcode.style.color = 'white';
             btnBarcode.style.border = 'none';
-            
             btnQr.style.background = '#f1f5f9';
             btnQr.style.color = '#64748b';
             btnQr.style.border = '1px solid #cbd5e1';
-
             contBarcode.style.display = 'block';
             contQr.style.display = 'none';
             helperText.innerHTML = '💡 Pastikan garis barcode terlihat jelas di dalam layar kamera.';
-            
             startBarcodeScanner();
         } else {
             btnQr.style.background = '#3b82f6';
             btnQr.style.color = 'white';
             btnQr.style.border = 'none';
-            
             btnBarcode.style.background = '#f1f5f9';
             btnBarcode.style.color = '#64748b';
             btnBarcode.style.border = '1px solid #cbd5e1';
-
             contQr.style.display = 'block';
             contBarcode.style.display = 'none';
             helperText.innerHTML = '💡 Pastikan seluruh kotak QR Code terlihat di layar.';
-            
             startQrScanner();
         }
     }
 
-    // Mulai dengan Quagga2 secara default
-    startBarcodeScanner();
+    // Initialize with saved mode (prevent redundant double init)
+    if (currentMode === 'qr') {
+        // Pindah tab visual dan start QR
+        switchTab('qr');
+    } else {
+        startBarcodeScanner();
+    }
 });
 </script>
 @endsection
