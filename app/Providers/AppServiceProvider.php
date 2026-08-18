@@ -19,10 +19,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Force HTTPS for all URL generation if not on localhost
-        // This prevents 405 Method Not Allowed errors caused by POST requests 
-        // being redirected and downgraded to GET by HTTPS reverse proxies.
-        if (request()->getHost() !== 'localhost' && request()->getHost() !== '127.0.0.1') {
+        // Always force HTTPS in production.
+        // This is necessary because reverse proxies (like Cloudflare or Nginx load balancers)
+        // often cause HTTP->HTTPS redirects that downgrade POST requests to GET, resulting in 405 errors.
+        if (config('app.env') === 'production') {
             \Illuminate\Support\Facades\URL::forceScheme('https');
         }
     }

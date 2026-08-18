@@ -9,7 +9,7 @@
         <p>Pilih mode kamera sesuai dengan jenis kartu (KTM Fisik = Barcode 1D, HP = QR Code).</p>
     </div>
 
-    <div class="form-container" style="max-width: 600px; margin: 0 auto;">
+    <div class="form-container w-full" style="max-width: 600px; margin: 0 auto;">
 
 
 
@@ -17,7 +17,7 @@
             @csrf
             
             <!-- STEP 1: PILIH EVENT -->
-            <div class="form-group" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; margin-bottom: 24px;">
+            <div class="form-group" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; margin-bottom: 24px;">
                 <label style="font-size: 14px; font-weight: 600; color: #334155; margin-bottom: 12px; display: block;">
                     <i class="ph-bold ph-calendar-blank"></i> 1. Pilih Event Aktif (Wajib)
                 </label>
@@ -30,8 +30,8 @@
             </div>
 
             <!-- STEP 2: DUAL ENGINE CAMERA TABS -->
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; margin-bottom: 24px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 16px; margin-bottom: 24px;">
+                <div class="d-flex justify-between align-center flex-wrap gap-2 mb-3">
                     <label style="font-size: 14px; font-weight: 600; color: #334155; margin: 0;">
                         <i class="ph-bold ph-video-camera"></i> 2. Arahkan Kamera
                     </label>
@@ -42,26 +42,26 @@
                 </div>
 
                 <!-- TABS -->
-                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <div class="d-flex gap-2 mb-3">
                     <button type="button" id="tab-barcode" onclick="switchTab('barcode')" style="flex: 1; padding: 10px; border-radius: 8px; border: none; background: #3b82f6; color: white; font-weight: bold; cursor: pointer; transition: all 0.2s;">
-                        <i class="ph-bold ph-barcode"></i> Barcode (KTM)
+                        <i class="ph-bold ph-barcode"></i> Barcode
                     </button>
                     <button type="button" id="tab-qr" onclick="switchTab('qr')" style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; background: #f1f5f9; color: #64748b; font-weight: bold; cursor: pointer; transition: all 0.2s;">
-                        <i class="ph-bold ph-qr-code"></i> QR Code (HP)
+                        <i class="ph-bold ph-qr-code"></i> QR Code
                     </button>
                 </div>
                 
                 <!-- CONTAINER BARCODE (QUAGGA2) -->
-                <div id="container-barcode" style="position: relative; border-radius: 12px; overflow: hidden; border: 2px solid #3b82f6; background: black; min-height: 250px; display: block;">
-                    <div id="barcode-reader" class="viewport" style="width: 100%;"></div>
+                <div id="container-barcode" style="position: relative; border-radius: 12px; overflow: hidden; border: 2px solid #3b82f6; background: black; min-height: 250px; display: block; width: 100%;">
+                    <div id="barcode-reader" class="viewport w-full"></div>
                     <div id="laser-overlay-barcode" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: block;">
                         <div class="laser-line"></div>
                     </div>
                 </div>
 
                 <!-- CONTAINER QR CODE (ZXING) -->
-                <div id="container-qr" style="position: relative; border-radius: 12px; overflow: hidden; border: 2px solid #cbd5e1; background: black; min-height: 250px; display: none;">
-                    <div id="qr-reader" style="width: 100%;"></div>
+                <div id="container-qr" style="position: relative; border-radius: 12px; overflow: hidden; border: 2px solid #cbd5e1; background: black; min-height: 250px; display: none; width: 100%;">
+                    <div id="qr-reader" class="w-full"></div>
                 </div>
 
                 <p id="helper-text" style="color: #64748b; font-size: 12px; margin-top: 10px; text-align: center;">

@@ -4,14 +4,14 @@
 
 @section('content')
 
-    <div class="header-section" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 24px;">
+    <div class="header-section d-flex justify-between align-center flex-wrap gap-3 mb-4">
         <div>
             <h2>Data Mahasiswa</h2>
             <p>Kelola seluruh data mahasiswa yang terdaftar di sistem.</p>
         </div>
         
-        <div style="display: flex; gap: 8px;">
-            <form method="GET" action="{{ url('/admin/mahasiswa') }}" style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <div class="d-flex gap-2">
+            <form method="GET" action="{{ url('/admin/mahasiswa') }}" class="d-flex gap-2 flex-wrap">
                 <select name="event_id" class="form-control" style="flex: 1 1 200px; max-width: 100%; padding: 8px 40px 8px 12px; border-radius: 8px; cursor: pointer;">
                     <option value="">Semua Event</option>
                     @foreach($events as $event)

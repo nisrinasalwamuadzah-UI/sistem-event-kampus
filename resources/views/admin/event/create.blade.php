@@ -48,11 +48,11 @@
                 <input type="file" name="poster" class="form-control" required style="padding: 9px 16px;">
             </div>
 
-            <div style="margin-top: 30px; display: flex; gap: 10px;">
-                <button type="submit" class="btn btn-primary">
+            <div class="d-flex flex-wrap gap-2" style="margin-top: 30px;">
+                <button type="submit" class="btn btn-primary flex-1 d-flex justify-center">
                     <i class="ph-bold ph-floppy-disk"></i> Simpan Event
                 </button>
-                <a href="{{ url('/admin/event') }}" class="btn btn-secondary">Batal</a>
+                <a href="{{ url('/admin/event') }}" class="btn btn-secondary flex-1 d-flex justify-center">Batal</a>
             </div>
         </form>
     </div>

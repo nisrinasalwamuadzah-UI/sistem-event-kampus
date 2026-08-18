@@ -4,12 +4,12 @@
 
 @section('content')
 
-    <div class="header-section" style="display: flex; justify-content: space-between; align-items: flex-start;">
+    <div class="header-section d-flex justify-between flex-wrap gap-3">
         <div>
             <h2>Dashboard Pimpinan</h2>
             <p>Monitoring kegiatan dan kehadiran mahasiswa</p>
         </div>
-        <a href="{{ url('/pimpinan/export/kehadiran') }}" class="btn btn-primary" style="background: #10b981; color: white;">
+        <a href="{{ url('/pimpinan/export/kehadiran') }}" class="btn btn-save align-center d-flex">
             <i class="ph-bold ph-download-simple"></i> Unduh Semua Kehadiran
         </a>
     </div>
@@ -72,11 +72,11 @@
                     @else
                         <span class="badge selesai">Telah Selesai</span>
                     @endif
-                    <div style="display: flex; gap: 8px; margin-left: auto; flex-wrap: wrap;">
-                        <a href="{{ url('/pimpinan/export/kehadiran/'.$event->id) }}" class="btn btn-sm btn-secondary" style="border-color: #10b981; color: #10b981;">
+                    <div class="d-flex gap-2 flex-wrap flex-1 justify-between w-full">
+                        <a href="{{ url('/pimpinan/export/kehadiran/'.$event->id) }}" class="btn btn-sm btn-secondary flex-1 d-flex align-center justify-between" style="border-color: #10b981; color: #10b981;">
                             <i class="ph-bold ph-file-csv"></i> Unduh CSV
                         </a>
-                        <a href="{{ url('/pimpinan/kehadiran/'.$event->id.'/export-pdf') }}" class="btn btn-sm btn-danger" style="border-color: #ef4444; color: #ef4444; background: transparent;">
+                        <a href="{{ url('/pimpinan/kehadiran/'.$event->id.'/export-pdf') }}" class="btn btn-sm btn-danger flex-1 d-flex align-center justify-between" style="border-color: #ef4444; color: #ef4444; background: transparent;">
                             <i class="ph-bold ph-file-pdf"></i> Unduh PDF
                         </a>
                     </div>
