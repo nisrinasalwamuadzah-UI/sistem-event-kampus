@@ -1,4 +1,4 @@
-const CACHE_NAME = 'campusevent-cache-v4';
+const CACHE_NAME = 'campusevent-cache-v5';
 const urlsToCache = [
   '/',
   '/css/dashboard.css',
@@ -18,6 +18,11 @@ self.addEventListener('install', event => {
 self.addEventListener('fetch', event => {
   // Hanya tangani GET requests
   if (event.request.method !== 'GET') return;
+
+  // Bypass service worker untuk rute admin agar tidak terjadi isu cache stale HTML
+  if (event.request.url.includes('/admin')) {
+      return; 
+  }
 
   // STRATEGI 1: Network First untuk halaman HTML (Navigasi)
   // Mencegah masalah cache pada halaman dinamis yang memiliki notifikasi Session (Flash Message)
