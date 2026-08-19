@@ -12,7 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <!-- Unified CSS -->
-    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}?v=9">
+    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}?v=10">
     
     <!-- PWA Settings -->
     <link rel="manifest" href="{{ asset('manifest.json') }}">
