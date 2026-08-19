@@ -7,6 +7,8 @@ const urlsToCache = [
 ];
 
 self.addEventListener('install', event => {
+  // Paksa SW baru langsung mengambil alih tanpa menunggu tab ditutup
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
@@ -69,17 +71,21 @@ self.addEventListener('fetch', event => {
 self.addEventListener('activate', event => {
   const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            return caches.delete(cacheName); // Hapus cache versi lama (v1)
-          }
-        })
-      );
-    })
+    Promise.all([
+      // Hapus cache versi lama
+      caches.keys().then(cacheNames =>
+        Promise.all(
+          cacheNames.map(cacheName => {
+            if (cacheWhitelist.indexOf(cacheName) === -1) {
+              return caches.delete(cacheName);
+            }
+          })
+        )
+      ),
+      // Langsung ambil alih semua klien yang terbuka (tab lama)
+      self.clients.claim()
+    ])
   );
-  return self.clients.claim(); // Memaksa SW baru segera mengambil alih
 });
 
 // Menangkap perintah untuk SKIP_WAITING dari UI
