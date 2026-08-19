@@ -51,6 +51,7 @@
                         </a>
                         <form action="{{ url('/admin/event/delete/'.$event->id) }}" method="POST" class="d-flex flex-1" onsubmit="return confirm('Yakin mau hapus event ini?')">
                             @csrf
+                            @method('DELETE')
                             <button type="submit" class="btn btn-sm btn-danger w-full">
                                 <i class="ph-bold ph-trash"></i> Hapus
                             </button>

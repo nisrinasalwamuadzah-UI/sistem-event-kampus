@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Session;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\KehadiranController;
 
+use App\Http\Controllers\AuthController;
+
 /*
 |--------------------------------------------------------------------------
 | HOME
@@ -22,21 +24,11 @@ Route::get('/', function () {
 |--------------------------------------------------------------------------
 */
 
-Route::get('/admin/login', function () {
-    return view('admin.login');
-});
+Route::get('/admin/login', [AuthController::class, 'showAdminLogin']);
+Route::post('/admin/login', [AuthController::class, 'processAdminLogin']);
 
-Route::post('/admin/login', function (Request $request) {
-
-    if ($request->username == 'admin' && $request->password == '123') {
-
-        Session::put('role', 'admin');
-
-        return redirect('/admin/dashboard');
-    }
-
-    return back()->with('error', 'Login gagal');
-});
+use App\Http\Controllers\AdminDashboardController;
+use App\Http\Controllers\PimpinanDashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -44,30 +36,7 @@ Route::post('/admin/login', function (Request $request) {
 |--------------------------------------------------------------------------
 */
 
-Route::get('/admin/dashboard', function () {
-
-    if (Session::get('role') != 'admin') {
-        return redirect('/admin/login');
-    }
-
-    $events = \App\Models\Event::latest()->get();
-
-    $mahasiswas = \App\Models\Mahasiswa::all();
-
-    $totalEvent = \App\Models\Event::count();
-
-    $totalHadir = \App\Models\Kehadiran::count();
-
-    $totalTidakHadir = 0;
-
-    return view('admin.dashboard', compact(
-        'events',
-        'mahasiswas',
-        'totalEvent',
-        'totalHadir',
-        'totalTidakHadir'
-    ));
-});
+Route::get('/admin/dashboard', [AdminDashboardController::class, 'index']);
 
 /*
 |--------------------------------------------------------------------------
@@ -81,27 +50,12 @@ Route::middleware(\App\Http\Middleware\AdminMiddleware::class)->group(function (
     Route::get('/admin/event/create', [EventController::class, 'create']);
     Route::post('/admin/event/store', [EventController::class, 'store']);
     
-    // DEBUG ROUTE!
-    Route::get('/admin/event/debug-id/{id}', function($id) {
-        $event = \App\Models\Event::find($id);
-        return response()->json([
-            'id_passed' => $id,
-            'event' => $event,
-            'all_events' => \App\Models\Event::all()
-        ]);
-    });
-
     Route::get('/admin/event/edit/{id}', [EventController::class, 'edit']);
-    Route::match(['GET', 'POST'], '/admin/event/update/{id}', [EventController::class, 'update']);
-    Route::match(['GET', 'POST'], '/admin/event/delete/{id}', [EventController::class, 'delete']);
+    Route::put('/admin/event/update/{id}', [EventController::class, 'update']);
+    Route::delete('/admin/event/delete/{id}', [EventController::class, 'delete']);
     Route::get('/admin/event/{id}/peserta', [EventController::class, 'peserta']);
     Route::post('/admin/event/{id}/peserta', [EventController::class, 'updatePeserta']);
-    Route::match(['GET', 'POST'], '/admin/event/finish/{id}', function ($id) {
-        $event = \App\Models\Event::findOrFail($id);
-        $event->status = 'Selesai';
-        $event->save();
-        return back()->with('success', 'Event berhasil diakhiri.');
-    });
+    Route::post('/admin/event/finish/{id}', [EventController::class, 'finish']);
 
     /* --- MAHASISWA --- */
     Route::get('/admin/mahasiswa', [App\Http\Controllers\MahasiswaController::class, 'index']);
@@ -115,20 +69,10 @@ Route::middleware(\App\Http\Middleware\AdminMiddleware::class)->group(function (
     Route::get('/admin/scan', [KehadiranController::class, 'scan']);
     Route::post('/admin/scan', [KehadiranController::class, 'store']);
     
-    Route::get('/admin/kehadiran', function () {
-        $events = \App\Models\Event::withCount('kehadirans')->latest()->get();
-        return view('admin.kehadiran', compact('events'));
-    });
+    Route::get('/admin/kehadiran', [KehadiranController::class, 'index']);
     Route::get('/admin/kehadiran/{id}/export-pdf', [KehadiranController::class, 'exportPdf']);
     Route::get('/admin/kehadiran/{id}/save-pdf', [KehadiranController::class, 'savePdf']);
-    Route::get('/admin/kehadiran/{id}', function ($id) {
-        $event = \App\Models\Event::findOrFail($id);
-        $kehadirans = $event->kehadirans()->latest()->get();
-        $totalRegistered = \Illuminate\Support\Facades\DB::table('event_mahasiswa')->where('event_id', $id)->count();
-        $presentCount = $kehadirans->count();
-        $absentCount = max($totalRegistered - $presentCount, 0);
-        return view('admin.kehadiran', compact('event', 'kehadirans', 'totalRegistered', 'presentCount', 'absentCount'));
-    });
+    Route::get('/admin/kehadiran/{id}', [KehadiranController::class, 'show']);
 
 }); // End of Admin Group
 
@@ -138,9 +82,39 @@ Route::middleware(\App\Http\Middleware\AdminMiddleware::class)->group(function (
 |--------------------------------------------------------------------------
 */
 
-Route::get('/logout', function () {
+Route::get('/logout', [AuthController::class, 'logout']);
 
-    Session::forget('role');
+/*
+|--------------------------------------------------------------------------
+| PIMPINAN LOGIN
+|--------------------------------------------------------------------------
+*/
 
-    return redirect('/');
+Route::get('/pimpinan/login', [AuthController::class, 'showPimpinanLogin']);
+Route::post('/pimpinan/login', [AuthController::class, 'processPimpinanLogin']);
+
+/*
+|--------------------------------------------------------------------------
+| ROUTE GROUP: PIMPINAN ONLY
+|--------------------------------------------------------------------------
+*/
+Route::middleware('pimpinan')->group(function () {
+
+    /*
+    |--------------------------------------------------------------------------
+    | PIMPINAN DASHBOARD
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/pimpinan/dashboard', [PimpinanDashboardController::class, 'index']);
+
+    /*
+    |--------------------------------------------------------------------------
+    | TOMBOL ACC & EXPORT
+    |--------------------------------------------------------------------------
+    */
+    Route::post('/pimpinan/event/finish/{id}', [EventController::class, 'finish']);
+
+    Route::get('/pimpinan/export/kehadiran/{event_id?}', [KehadiranController::class, 'exportPimpinan']);
+    Route::get('/pimpinan/kehadiran/{id}/export-pdf', [KehadiranController::class, 'exportPdf']);
+
 });

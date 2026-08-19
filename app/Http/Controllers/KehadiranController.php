@@ -11,6 +11,22 @@ use Barryvdh\DomPDF\Facade\Pdf;
 
 class KehadiranController extends Controller
 {
+    public function index()
+    {
+        $events = \App\Models\Event::withCount('kehadirans')->latest()->get();
+        return view('admin.kehadiran', compact('events'));
+    }
+
+    public function show($id)
+    {
+        $event = \App\Models\Event::findOrFail($id);
+        $kehadirans = $event->kehadirans()->latest()->get();
+        $totalRegistered = \Illuminate\Support\Facades\DB::table('event_mahasiswa')->where('event_id', $id)->count();
+        $presentCount = $kehadirans->count();
+        $absentCount = max($totalRegistered - $presentCount, 0);
+        return view('admin.kehadiran', compact('event', 'kehadirans', 'totalRegistered', 'presentCount', 'absentCount'));
+    }
+
     public function scan()
     {
         $events = \App\Models\Event::where('status', 'Aktif')->get();
@@ -75,7 +91,7 @@ class KehadiranController extends Controller
 
     public function exportPdf($eventId)
     {
-        if (!in_array(session('role'), ['admin', 'pimpinan'])) {
+        if (!auth()->check() || !in_array(auth()->user()->role, ['admin', 'pimpinan'])) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -90,7 +106,7 @@ class KehadiranController extends Controller
 
     public function savePdf($eventId)
     {
-        if (session('role') != 'admin') {
+        if (!auth()->check() || auth()->user()->role != 'admin') {
             abort(403, 'Unauthorized action.');
         }
 
@@ -108,7 +124,7 @@ class KehadiranController extends Controller
 
     public function exportPimpinan($event_id = null)
     {
-        if (session('role') != 'pimpinan') {
+        if (!auth()->check() || auth()->user()->role != 'pimpinan') {
             abort(403, 'Unauthorized action.');
         }
 

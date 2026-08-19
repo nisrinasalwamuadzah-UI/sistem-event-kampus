@@ -22,6 +22,7 @@
 
         <form action="{{ url('/admin/event/update/'.$event->id) }}" method="POST" enctype="multipart/form-data">
             @csrf
+            @method('PUT')
 
             <div class="form-group">
                 <label>Nama Event</label>

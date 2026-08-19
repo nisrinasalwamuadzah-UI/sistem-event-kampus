@@ -20,7 +20,7 @@
             <div class="card-icon indigo"><i class="ph-fill ph-calendar-check"></i></div>
             <div class="card-info">
                 <h3>Total Event</h3>
-                <p>{{ \App\Models\Event::count() }}</p>
+                <p>{{ $totalEvent }}</p>
             </div>
         </div>
 
@@ -28,7 +28,7 @@
             <div class="card-icon green"><i class="ph-fill ph-check-circle"></i></div>
             <div class="card-info">
                 <h3>Total Kehadiran</h3>
-                <p>{{ \App\Models\Kehadiran::count() }}</p>
+                <p>{{ $totalHadir }}</p>
             </div>
         </div>
 
@@ -36,7 +36,15 @@
             <div class="card-icon green"><i class="ph-fill ph-users"></i></div>
             <div class="card-info">
                 <h3>Total Mahasiswa</h3>
-                <p>{{ \App\Models\Mahasiswa::count() }}</p>
+                <p>{{ $totalMahasiswa }}</p>
+            </div>
+        </div>
+
+        <div class="card orange">
+            <div class="card-icon orange"><i class="ph-fill ph-warning-circle"></i></div>
+            <div class="card-info">
+                <h3>Total Tidak Hadir</h3>
+                <p>{{ $totalTidakHadir }}</p>
             </div>
         </div>
     </div>
@@ -47,7 +55,7 @@
     </div>
 
     <div class="event-grid">
-        @foreach(\App\Models\Event::latest()->get() as $event)
+        @foreach($events as $event)
         <div class="event-card">
             <img src="{{ asset('storage/'.$event->poster) }}">
             

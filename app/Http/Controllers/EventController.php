@@ -147,4 +147,17 @@ class EventController extends Controller
 
         return redirect('/admin/event')->with('success', 'Daftar peserta event berhasil diupdate!');
     }
+
+    public function finish($id)
+    {
+        $event = Event::findOrFail($id);
+        $event->status = 'Selesai';
+        $event->save();
+
+        if (auth()->check() && auth()->user()->role == 'pimpinan') {
+            return redirect('/pimpinan/dashboard')->with('success', 'Event berhasil diakhiri.');
+        }
+
+        return back()->with('success', 'Event berhasil diakhiri.');
+    }
 }
