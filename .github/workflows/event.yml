@@ -87,6 +87,10 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           envs: COMPOSE_CONTENT,PROD_APP_KEY,PROD_DB_PASSWORD,PROD_APP_URL,DB_DATABASE,DB_USERNAME,APP_IMAGE
           script: |
+            # Bersihkan Docker Cache & Image lama karena server kehabisan disk space (No space left on device)
+            echo "Membersihkan disk space server..."
+            docker system prune -a -f || true
+            
             # Buat direktori dan masuk ke dalamnya
             mkdir -p ${{ secrets.DEPLOY_PATH }}
             cd ${{ secrets.DEPLOY_PATH }}
