@@ -30,13 +30,6 @@ Route::post('/admin/login', [AuthController::class, 'processAdminLogin']);
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\PimpinanDashboardController;
 
-/*
-|--------------------------------------------------------------------------
-| ADMIN DASHBOARD
-|--------------------------------------------------------------------------
-*/
-
-Route::get('/admin/dashboard', [AdminDashboardController::class, 'index']);
 
 /*
 |--------------------------------------------------------------------------
@@ -44,6 +37,9 @@ Route::get('/admin/dashboard', [AdminDashboardController::class, 'index']);
 |--------------------------------------------------------------------------
 */
 Route::middleware(\App\Http\Middleware\AdminMiddleware::class)->group(function () {
+
+    /* --- DASHBOARD --- */
+    Route::get('/admin/dashboard', [AdminDashboardController::class, 'index']);
 
     /* --- EVENT CRUD --- */
     Route::get('/admin/event', [EventController::class, 'index']);
