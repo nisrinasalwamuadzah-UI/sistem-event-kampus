@@ -31,7 +31,7 @@
         </div>
 
         <div class="menu">
-            @if(session('role') == 'admin')
+            @if(auth()->check() && auth()->user()->role == 'admin')
                 <a href="{{ url('/admin/dashboard') }}" class="{{ request()->is('admin/dashboard') ? 'active' : '' }}">
                     <i class="ph ph-squares-four"></i>
                     <span>Dashboard</span>
@@ -52,7 +52,7 @@
                     <i class="ph ph-qr-code"></i>
                     <span>Scan Absen</span>
                 </a>
-            @elseif(session('role') == 'pimpinan')
+            @elseif(auth()->check() && auth()->user()->role == 'pimpinan')
                 <a href="{{ url('/pimpinan/dashboard') }}" class="{{ request()->is('pimpinan/dashboard') ? 'active' : '' }}">
                     <i class="ph ph-squares-four"></i>
                     <span>Dashboard</span>
@@ -80,7 +80,7 @@
                     <i class="ph ph-sign-out" style="font-size: 24px;"></i>
                 </a>
                 
-                <span>{{ ucfirst(session('role') ?? 'Guest') }} User</span>
+                <span>{{ auth()->check() ? ucfirst(auth()->user()->role) : 'Guest' }} User</span>
                 <div class="avatar">
                     <i class="ph-fill ph-user"></i>
                 </div>

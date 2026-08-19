@@ -19,8 +19,11 @@ self.addEventListener('fetch', event => {
   // Hanya tangani GET requests
   if (event.request.method !== 'GET') return;
 
-  // Bypass service worker untuk rute admin agar tidak terjadi isu cache stale HTML
-  if (event.request.url.includes('/admin')) {
+  // Filter 1: Hindari request dari ekstensi Chrome (mengatasi error chrome-extension://)
+  if (!event.request.url.startsWith('http')) return;
+
+  // Filter 2: Bypass service worker untuk rute admin agar tidak terjadi isu cache stale HTML
+  if (event.request.url.includes('/admin') || event.request.url.includes('/pimpinan')) {
       return; 
   }
 
@@ -53,7 +56,12 @@ self.addEventListener('fetch', event => {
               });
             return networkResponse;
           }
-        );
+        ).catch(function(error) {
+          // Menangkap error jaringan (misal: diblokir oleh Adblocker/Brave Shields) 
+          // agar tidak mencemari konsol dengan Uncaught Promise Rejection
+          console.warn('[PWA] Fetch gagal atau diblokir:', event.request.url);
+          throw error;
+        });
       })
   );
 });
