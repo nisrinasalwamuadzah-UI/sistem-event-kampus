@@ -283,6 +283,7 @@ body {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     display: flex;
     flex-direction: column;
+    height: 100%;
 }
 
 .event-card:hover {
@@ -333,7 +334,7 @@ body {
 }
 
 .event-actions {
-    margin-top: 24px;
+    margin-top: auto;
     display: flex;
     flex-wrap: wrap; /* Fix buttons crushing each other */
     gap: 12px;

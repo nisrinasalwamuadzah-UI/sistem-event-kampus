@@ -69,7 +69,7 @@
                 </div>
             </div>
             
-            <div style="padding: 15px; border-top: 1px solid #e2e8f0; text-align: center;">
+            <div style="margin-top: auto; padding: 15px; border-top: 1px solid #e2e8f0; text-align: center;">
                 <span class="badge {{ strtolower($event->status) == 'aktif' ? 'aktif' : 'selesai' }}">
                     {{ $event->status }}
                 </span>
