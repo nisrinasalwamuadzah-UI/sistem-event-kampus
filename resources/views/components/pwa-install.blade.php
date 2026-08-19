@@ -164,7 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- 1. SERVICE WORKER REGISTRATION & UPDATE DETECTOR ---
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/sw.js').then(reg => {
+            navigator.serviceWorker.register('/sw.js?v=' + new Date().getTime()).then(reg => {
                 // Deteksi jika ada pembaruan service worker yang ditemukan
                 reg.addEventListener('updatefound', () => {
                     newWorker = reg.installing;
