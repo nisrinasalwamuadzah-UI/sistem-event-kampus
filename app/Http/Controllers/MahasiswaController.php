@@ -117,7 +117,7 @@ class MahasiswaController extends Controller
                 if ($val === 'nim') $colMap['nim'] = $colIndex;
                 elseif ($val === 'nama' || $val === 'nama lengkap') $colMap['nama'] = $colIndex;
                 elseif ($val === 'jurusan' || $val === 'prodi' || $val === 'program studi') $colMap['jurusan'] = $colIndex;
-                elseif ($val === 'semester' || $val === 'kelas') $colMap['semester'] = $colIndex;
+                elseif (str_contains($val, 'semester') || str_contains($val, 'kelas')) $colMap['semester'] = $colIndex;
             }
 
             // Jika NIM ditemukan, kita asumsikan ini adalah baris header
