@@ -13,7 +13,8 @@ class Event extends Model
         'tanggal',
         'tempat',
         'deskripsi',
-        'poster'
+        'poster',
+        'status',  // Wajib ada agar EventController::finish() bisa menyimpan perubahan status
     ];
 
     public function kehadirans()
