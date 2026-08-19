@@ -145,5 +145,18 @@
 
     <!-- Custom PWA Install Prompt -->
     @include('components.pwa-install')
+
+    <!-- FORCE UNREGISTER SERVICE WORKER (FIX STALE CACHE) -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                    registration.unregister().then(function(boolean) {
+                        console.log('ServiceWorker successfully unregistered to fix caching issues.');
+                    });
+                }
+            });
+        }
+    </script>
 </body>
 </html>
