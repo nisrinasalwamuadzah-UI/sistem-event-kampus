@@ -164,7 +164,7 @@
     <form method="POST" action="{{ url('/pimpinan/login') }}">
         @csrf
         <div class="input-group">
-            <input type="text" name="username" placeholder="Username" required>
+            <input type="email" name="username" placeholder="Email" autocomplete="email" required>
         </div>
         <div class="input-group">
             <input type="password" name="password" placeholder="Password" required>

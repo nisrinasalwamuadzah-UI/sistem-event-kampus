@@ -45,13 +45,17 @@ Route::middleware(\App\Http\Middleware\AdminMiddleware::class)->group(function (
     Route::get('/admin/event', [EventController::class, 'index']);
     Route::get('/admin/event/create', [EventController::class, 'create']);
     Route::post('/admin/event/store', [EventController::class, 'store']);
-    
+
+    // Rute dengan segmen literal harus didefinisikan SEBELUM rute dengan {id} wildcard
+    // untuk mencegah Laravel salah mencocokkan URL seperti /admin/event/finish/1
     Route::get('/admin/event/edit/{id}', [EventController::class, 'edit']);
     Route::put('/admin/event/update/{id}', [EventController::class, 'update']);
+    Route::post('/admin/event/finish/{id}', [EventController::class, 'finish']);
     Route::delete('/admin/event/delete/{id}', [EventController::class, 'delete']);
+
+    // Rute dengan segmen kedua dinamis didefinisikan TERAKHIR
     Route::get('/admin/event/{id}/peserta', [EventController::class, 'peserta']);
     Route::post('/admin/event/{id}/peserta', [EventController::class, 'updatePeserta']);
-    Route::post('/admin/event/finish/{id}', [EventController::class, 'finish']);
 
     /* --- MAHASISWA --- */
     Route::get('/admin/mahasiswa', [App\Http\Controllers\MahasiswaController::class, 'index']);

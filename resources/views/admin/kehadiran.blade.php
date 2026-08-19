@@ -134,6 +134,7 @@
 @endsection
 
 @section('extra_js')
+@if(isset($event))
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     const presentCount = {{ $presentCount ?? 0 }};
@@ -146,16 +147,16 @@
                 labels: ['Hadir', 'Tidak Hadir'],
                 datasets: [{
                     data: [presentCount, absentCount],
-                    backgroundColor: ['#10B981', '#cbd5e1'], /* Emerald for Present, Light Slate for Absent */
+                    backgroundColor: ['#10B981', '#cbd5e1'],
                     borderColor: ['#ffffff', '#ffffff'],
-                    borderWidth: 4, /* Thicker border for a modern donut slice separation */
+                    borderWidth: 4,
                     hoverOffset: 4,
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                cutout: '70%', /* Thinner donut ring */
+                cutout: '70%',
                 plugins: {
                     legend: {
                         position: 'bottom',
@@ -176,4 +177,5 @@
         });
     }
 </script>
+@endif
 @endsection
