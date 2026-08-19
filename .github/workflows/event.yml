@@ -63,27 +63,18 @@ jobs:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
           version: 1.68.1
 
-      - name: Ensure target directory exists
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            mkdir -p ${{ secrets.DEPLOY_PATH }}
-
-      - name: Copy Compose file to VM
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "docker-compose.yml"
-          target: "${{ secrets.DEPLOY_PATH }}"
+      - name: Prepare Compose file for SSH
+        id: prepare_compose
+        run: |
+          EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+          echo "COMPOSE_CONTENT<<$EOF" >> $GITHUB_ENV
+          cat docker-compose.yml >> $GITHUB_ENV
+          echo "$EOF" >> $GITHUB_ENV
 
       - name: Deploy to Docker Swarm via SSH
         uses: appleboy/ssh-action@v1.0.3
         env:
+          COMPOSE_CONTENT: ${{ env.COMPOSE_CONTENT }}
           PROD_APP_KEY: ${{ secrets.PROD_APP_KEY }}
           PROD_DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
           PROD_APP_URL: ${{ secrets.PROD_APP_URL }}
@@ -94,9 +85,14 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: PROD_APP_KEY,PROD_DB_PASSWORD,PROD_APP_URL,DB_DATABASE,DB_USERNAME,APP_IMAGE
+          envs: COMPOSE_CONTENT,PROD_APP_KEY,PROD_DB_PASSWORD,PROD_APP_URL,DB_DATABASE,DB_USERNAME,APP_IMAGE
           script: |
+            # Buat direktori dan masuk ke dalamnya
+            mkdir -p ${{ secrets.DEPLOY_PATH }}
             cd ${{ secrets.DEPLOY_PATH }}
+            
+            # Tulis file docker-compose.yml tanpa SCP (bypass SCP bugs)
+            echo "$COMPOSE_CONTENT" > docker-compose.yml
             
             # Login ke GHCR di dalam VM agar bisa pull image private
             echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
