@@ -11,7 +11,7 @@ class PimpinanDashboardController extends Controller
 {
     public function index()
     {
-        $events = Event::latest()->get();
+        $events = Event::latest()->take(6)->get();
         $totalEvent = Event::count();
         $totalHadir = Kehadiran::count();
         $totalMahasiswa = Mahasiswa::count();

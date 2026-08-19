@@ -19,7 +19,7 @@
 
         @foreach($events as $event)
         <div class="event-card">
-            <img src="{{ asset('storage/'.$event->poster) }}" alt="poster">
+            <img src="{{ asset('storage/'.$event->poster) }}" loading="lazy" alt="poster">
             
             <div class="event-content">
                 <div class="event-title">

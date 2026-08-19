@@ -4,15 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title') - Event Campus</title>
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Phosphor Icons -->
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Phosphor Icons (Deferred to not block rendering) -->
+    <script defer src="https://unpkg.com/@phosphor-icons/web"></script>
     
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <!-- Unified CSS -->
-    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}?v=10">
+    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}?v=11">
     
     <!-- PWA Settings -->
     <link rel="manifest" href="{{ asset('manifest.json') }}">

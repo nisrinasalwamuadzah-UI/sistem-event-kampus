@@ -47,7 +47,7 @@
     <div class="event-grid">
         @foreach($events as $event)
         <div class="event-card">
-            <img src="{{ asset('storage/'.$event->poster) }}">
+            <img src="{{ asset('storage/'.$event->poster) }}" loading="lazy" alt="Poster Event">
             
             <div class="event-content">
                 <div class="event-title">

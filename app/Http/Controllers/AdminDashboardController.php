@@ -15,15 +15,13 @@ class AdminDashboardController extends Controller
         // AdminMiddleware handles the check, but we can leave this or remove it.
         // I will remove the manual check since AdminMiddleware covers it.
 
-        $events = Event::latest()->get();
-        $mahasiswas = Mahasiswa::all();
+        $events = Event::latest()->take(6)->get();
         $totalEvent = Event::count();
         $totalHadir = Kehadiran::count();
         $totalTidakHadir = 0; // Or calculate if needed
 
         return view('admin.dashboard', compact(
             'events',
-            'mahasiswas',
             'totalEvent',
             'totalHadir',
             'totalTidakHadir'
