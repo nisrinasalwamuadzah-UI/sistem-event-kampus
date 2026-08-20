@@ -164,7 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- 1. SERVICE WORKER REGISTRATION & UPDATE DETECTOR ---
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/sw.js?v=' + new Date().getTime()).then(reg => {
+            navigator.serviceWorker.register('/sw.js?v=999').then(reg => {
                 // Deteksi jika ada pembaruan service worker yang ditemukan
                 reg.addEventListener('updatefound', () => {
                     newWorker = reg.installing;
@@ -180,13 +180,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
             });
             
-            // Ketika SW baru memaksa mengambil alih, otomatis reload halaman
-            let refreshing;
-            navigator.serviceWorker.addEventListener('controllerchange', () => {
-                if (refreshing) return;
-                refreshing = true;
-                window.location.reload();
-            });
+            // Auto reload pada controllerchange DIHAPUS karena menyebabkan infinite loop
+            // ketika versi SW dipaksa bypass cache.
         });
     }
 
