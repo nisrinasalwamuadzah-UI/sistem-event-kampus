@@ -12,12 +12,7 @@
         
         <div class="d-flex gap-2">
             <form method="GET" action="{{ url('/admin/mahasiswa') }}" class="d-flex gap-2 flex-wrap">
-                <select name="event_id" class="form-control" style="flex: 1 1 200px; max-width: 100%; padding: 8px 40px 8px 12px; border-radius: 8px; cursor: pointer;">
-                    <option value="">Semua Event</option>
-                    @foreach($events as $event)
-                        <option value="{{ $event->id }}" {{ ($eventId ?? '') == $event->id ? 'selected' : '' }}>{{ $event->nama_event }}</option>
-                    @endforeach
-                </select>
+
                 <select name="angkatan" class="form-control" style="flex: 1 1 170px; max-width: 100%; padding: 8px 40px 8px 12px; border-radius: 8px; cursor: pointer;">
                     <option value="">Semua Angkatan</option>
                     @foreach($angkatans as $thn)
