@@ -12,6 +12,7 @@ class MahasiswaController extends Controller
         $query = Mahasiswa::query();
 
         $angkatan = $request->get('angkatan');
+        $search = $request->get('search');
 
         // Filter Angkatan
         if ($angkatan) {
@@ -29,7 +30,16 @@ class MahasiswaController extends Controller
             }
         }
 
-        $mahasiswas = $query->get();
+        // Filter Search
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('nim', 'like', "%{$search}%")
+                  ->orWhere('nama', 'like', "%{$search}%")
+                  ->orWhere('jurusan', 'like', "%{$search}%");
+            });
+        }
+
+        $mahasiswas = $query->paginate(50)->withQueryString();
 
         // Get unique cohort prefixes for the dropdown filter dynamically
         $allNims = Mahasiswa::select('nim')->pluck('nim');
@@ -51,7 +61,7 @@ class MahasiswaController extends Controller
         }
         arsort($angkatans);
 
-        return view('admin.mahasiswa.index', compact('mahasiswas', 'angkatans', 'angkatan'));
+        return view('admin.mahasiswa.index', compact('mahasiswas', 'angkatans', 'angkatan', 'search'));
     }
 
     public function import(Request $request)

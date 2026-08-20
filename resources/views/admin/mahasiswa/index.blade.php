@@ -12,7 +12,7 @@
         
         <div class="d-flex gap-2">
             <form method="GET" action="{{ url('/admin/mahasiswa') }}" class="d-flex gap-2 flex-wrap">
-
+                <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Cari Nama/NIM..." class="form-control" style="flex: 1 1 200px; max-width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1;">
                 <select name="angkatan" class="form-control" style="flex: 1 1 170px; max-width: 100%; padding: 8px 40px 8px 12px; border-radius: 8px; cursor: pointer;">
                     <option value="">Semua Angkatan</option>
                     @foreach($angkatans as $thn)
@@ -62,6 +62,10 @@
                 @endforelse
             </tbody>
         </table>
+    </div>
+    
+    <div style="margin-bottom: 24px;">
+        {{ $mahasiswas->links('pagination::bootstrap-5') }}
     </div>
 
     <div id="importModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); padding: 16px;">
