@@ -61,6 +61,7 @@ Route::middleware(\App\Http\Middleware\AdminMiddleware::class)->group(function (
     Route::get('/admin/mahasiswa', [App\Http\Controllers\MahasiswaController::class, 'index']);
     Route::post('/admin/mahasiswa/import', [App\Http\Controllers\MahasiswaController::class, 'import']);
     Route::get('/admin/mahasiswa/template', [App\Http\Controllers\MahasiswaController::class, 'downloadTemplate']);
+    Route::delete('/admin/mahasiswa/{id}', [App\Http\Controllers\MahasiswaController::class, 'destroy']);
 
     /* --- SCAN & KEHADIRAN --- */
     Route::get('/scan', function () {

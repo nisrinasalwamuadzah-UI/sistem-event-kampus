@@ -182,4 +182,20 @@ class MahasiswaController extends Controller
 
         return response()->stream($callback, 200, $headers);
     }
+
+    public function destroy($id)
+    {
+        $mahasiswa = Mahasiswa::findOrFail($id);
+        
+        // Hapus juga data pendaftaran di event (agar tidak jadi error yatim piatu)
+        \Illuminate\Support\Facades\DB::table('event_mahasiswa')
+            ->where('nim', $mahasiswa->nim)
+            ->delete();
+            
+        // Sesuai persetujuan: Data kehadiran (riwayat absen) dibiarkan saja sebagai history.
+
+        $mahasiswa->delete();
+
+        return back()->with('success', 'Data mahasiswa berhasil dihapus.');
+    }
 }

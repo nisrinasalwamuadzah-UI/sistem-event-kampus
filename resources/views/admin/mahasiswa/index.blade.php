@@ -41,6 +41,7 @@
                     <th style="padding: 16px; font-size: 13px; color: #64748b; font-weight: 600;">Nama Lengkap</th>
                     <th style="padding: 16px; font-size: 13px; color: #64748b; font-weight: 600;">Jurusan</th>
                     <th style="padding: 16px; font-size: 13px; color: #64748b; font-weight: 600;">Semester</th>
+                    <th style="padding: 16px; font-size: 13px; color: #64748b; font-weight: 600; text-align: center;">Aksi</th>
                 </tr>
             </thead>
             <tbody>
@@ -51,6 +52,15 @@
                     <td style="padding: 16px; color: #334155; font-weight: 500;">{{ $mhs->nama }}</td>
                     <td style="padding: 16px; color: #64748b;">{{ $mhs->jurusan }}</td>
                     <td style="padding: 16px;"><span class="badge" style="background: #eef2ff; color: #4f46e5; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600;">{{ $mhs->semester }}</span></td>
+                    <td style="padding: 16px; text-align: center;">
+                        <form action="{{ url('/admin/mahasiswa/' . $mhs->id) }}" method="POST" style="display: inline-block;">
+                            @csrf
+                            @method('DELETE')
+                            <button type="button" class="btn-delete" onclick="confirmDelete(this)" style="background: #fee2e2; color: #ef4444; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: 0.2s; font-size: 16px;">
+                                <i class="ph-bold ph-trash"></i>
+                            </button>
+                        </form>
+                    </td>
                 </tr>
                 @empty
                 <tr>
@@ -101,4 +111,25 @@
         </div>
     </div>
 
+@endsection
+
+@section('extra_js')
+<script>
+    function confirmDelete(button) {
+        Swal.fire({
+            title: 'Hapus Mahasiswa?',
+            text: "Data mahasiswa ini akan dihapus secara permanen, namun riwayat kehadirannya pada event sebelumnya akan tetap dipertahankan.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#94a3b8',
+            confirmButtonText: 'Ya, Hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                button.closest('form').submit();
+            }
+        });
+    }
+</script>
 @endsection
