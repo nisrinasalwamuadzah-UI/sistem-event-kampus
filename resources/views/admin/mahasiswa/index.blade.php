@@ -65,7 +65,7 @@
     </div>
     
     <div style="margin-bottom: 24px;">
-        {{ $mahasiswas->links('pagination::bootstrap-5') }}
+        {{ $mahasiswas->links('components.pagination') }}
     </div>
 
     <div id="importModal" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); padding: 16px;">
